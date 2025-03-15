@@ -1,0 +1,32 @@
+server:
+  port: 8080
+
+spring:
+  profiles:
+    active: local  # 현재 실행할 프로파일 설정
+  application:
+    name: smart-store
+  docker:
+    compose:
+      enabled: false  # Docker Compose 자동 실행 비활성화
+      
+  datasource:
+    url: jdbc:postgresql://localhost:5432/mydatabase
+    username: myuser
+    password: secret
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      connection-timeout: 20000  # 20초 동안 연결이 없으면 타임아웃
+      minimum-idle: 5            # 최소 유지 커넥션 개수
+      maximum-pool-size: 20      # 최대 커넥션 개수
+      idle-timeout: 30000        # 30초 동안 미사용 시 커넥션 제거
+  jpa:
+    database: postgresql   # 사용할 데이터베이스 종류 (기본적으로 감지됨)
+    properties:
+      hibernate:
+        format_sql: true  # Correct way to escape special characters
+        jdbc:
+          batch_size: 50  # 한 번에 50개씩 일괄 처리 (Batch Insert & Update)
+          order_inserts: true  # INSERT 쿼리 최적화
+          order_updates: true  # UPDATE 쿼리 최적화
+    open-in-view: false   # Open-Session-In-View 패턴 비활성화 

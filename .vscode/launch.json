@@ -1,0 +1,44 @@
+{
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Spring Boot-SmartStoreApplication<smartstore>",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "mainClass": "com.smartstore.SmartStoreApplication",
+      "projectName": "smartstore",
+      "args": "",
+      "envFile": "${workspaceFolder}/.env"
+    },
+    {
+      "type": "java",
+      "name": "Spring Boot-SmartStoreApplication<user>",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "mainClass": "com.smartstore.SmartStoreApplication",
+      "projectName": "user",
+      "args": "",
+      "envFile": "${workspaceFolder}/.env"
+    },
+    {
+      "type": "java",
+      "name": "Spring Boot-SmartStoreApplication<smartstore-user>",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "mainClass": "com.smartstore.SmartStoreApplication",
+      "projectName": "smartstore-user",
+      "args": "",
+      "envFile": "${workspaceFolder}/.env"
+    },
+    {
+      "type": "java",
+      "name": "Spring Boot-SmartStoreApplication<smartstore-base>",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "mainClass": "com.smartstore.SmartStoreApplication",
+      "projectName": "smartstore-base",
+      "args": "",
+      "envFile": "${workspaceFolder}/.env"
+    }
+  ]
+}
