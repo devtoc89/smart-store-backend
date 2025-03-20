@@ -46,3 +46,6 @@ springdoc:
   use-management-port: true
   default-flat-param-object: true
   
+app:
+  cors:
+    allowed-origins: ${ALLOWED_ORIGINS}

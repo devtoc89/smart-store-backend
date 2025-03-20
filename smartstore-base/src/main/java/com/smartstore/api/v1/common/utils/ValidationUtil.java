@@ -39,4 +39,10 @@ public class ValidationUtil {
       throw new BindException(bindingResult);
     }
   }
+
+  public static BindException createBindException(Object target, String field, String message) {
+    BindingResult bindingResult = new BeanPropertyBindingResult(target, target.getClass().getSimpleName());
+    bindingResult.addError(new FieldError(target.getClass().getSimpleName(), field, message));
+    return new BindException(bindingResult);
+  }
 }

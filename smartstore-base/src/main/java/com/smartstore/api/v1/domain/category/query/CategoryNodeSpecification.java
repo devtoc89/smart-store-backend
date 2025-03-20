@@ -1,7 +1,9 @@
 package com.smartstore.api.v1.domain.category.query;
 
+import java.util.UUID;
+
 import org.springframework.data.jpa.domain.Specification;
-import com.smartstore.api.v1.common.domain.query.BaseSpecification;
+
 import com.smartstore.api.v1.common.utils.SQLUtils;
 import com.smartstore.api.v1.domain.category.entity.CategoryNode;
 
@@ -16,9 +18,8 @@ public class CategoryNodeSpecification {
         : criteriaBuilder.like(root.get("name"), "%" + SQLUtils.escapeLike(name) + "%");
   }
 
-  public static Specification<CategoryNode> withFilters(String name, Boolean isDeleted) {
-    return Specification
-        .where(BaseSpecification.<CategoryNode>isDeleted(isDeleted))
-        .and(hasName(name));
+  public static Specification<CategoryNode> hasCategoryL2Id(UUID categoryL2Id) {
+    return (root, query, criteriaBuilder) -> categoryL2Id == null ? criteriaBuilder.conjunction()
+        : criteriaBuilder.equal(root.get("categoryL2").get("id"), categoryL2Id);
   }
 }

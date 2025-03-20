@@ -36,6 +36,20 @@ public class CategoryNodeService {
         .orElseThrow(() -> new NoSuchElementException("해당하는 카테고리(말단)가 존재하지 않습니다."));
   }
 
+  private void applyUpdate(CategoryNode categoryNode, CategoryNodeVO vo) {
+    categoryNode.setName(vo.getName());
+    categoryNode.setCategoryL2(entityManager.getReference(CategoryL2.class, vo.getCategoryL2Id()));
+  }
+
+  private void applyPartialUpdate(CategoryNode categoryNode, CategoryNodeVO vo) {
+    if (!ObjectUtils.isEmpty(vo.getName())) {
+      categoryNode.setName(vo.getName());
+    }
+    if (!ObjectUtils.isEmpty(vo.getCategoryL2Id())) {
+      categoryNode.setCategoryL2(entityManager.getReference(CategoryL2.class, vo.getCategoryL2Id()));
+    }
+  }
+
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   public boolean isExistsCategoryNodeById(UUID id) {
     return categoryNodeRepository.existsById(id);
@@ -63,26 +77,12 @@ public class CategoryNodeService {
     return CategoryNodeVO.fromEntity(categoryNodeRepository.save(create(vo)));
   }
 
-  private void applyUpdate(CategoryNode categoryNode, CategoryNodeVO vo) {
-    categoryNode.setName(vo.getName());
-    categoryNode.setCategoryL2(entityManager.getReference(CategoryL2.class, vo.getCategoryL2Id()));
-  }
-
   @Transactional(propagation = Propagation.REQUIRED)
   public CategoryNodeVO replaceCategoryNode(UUID id, CategoryNodeVO vo) {
     CategoryNode categoryNode = getExistingCategoryNodeById(id);
     applyUpdate(categoryNode, vo);
 
     return CategoryNodeVO.fromEntity(categoryNodeRepository.save(categoryNode));
-  }
-
-  private void applyPartialUpdate(CategoryNode categoryNode, CategoryNodeVO vo) {
-    if (!ObjectUtils.isEmpty(vo.getName())) {
-      categoryNode.setName(vo.getName());
-    }
-    if (!ObjectUtils.isEmpty(vo.getCategoryL2Id())) {
-      categoryNode.setCategoryL2(entityManager.getReference(CategoryL2.class, vo.getCategoryL2Id()));
-    }
   }
 
   @Transactional(propagation = Propagation.REQUIRED)

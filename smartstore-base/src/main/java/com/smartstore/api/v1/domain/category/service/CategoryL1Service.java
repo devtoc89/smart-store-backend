@@ -28,6 +28,16 @@ public class CategoryL1Service {
     return categoryL1Repository.findById(id).orElseThrow(() -> new NoSuchElementException("해당하는 카테고리(대)가 존재하지 않습니다."));
   }
 
+  private void applyUpdate(CategoryL1 categoryL1, CategoryL1VO vo) {
+    categoryL1.setName(vo.getName());
+  }
+
+  private void applyPartialUpdate(CategoryL1 categoryL1, CategoryL1VO vo) {
+    if (!ObjectUtils.isEmpty(vo.getName())) {
+      categoryL1.setName(vo.getName());
+    }
+  }
+
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   public boolean isExistsCategoryL1ById(UUID id) {
     return categoryL1Repository.existsById(id);
@@ -52,22 +62,12 @@ public class CategoryL1Service {
     return CategoryL1VO.fromEntity(categoryL1Repository.save(newCategoryL1));
   }
 
-  private void applyUpdate(CategoryL1 categoryL1, CategoryL1VO vo) {
-    categoryL1.setName(vo.getName());
-  }
-
   @Transactional(propagation = Propagation.REQUIRED)
   public CategoryL1VO replaceCategoryL1(UUID id, CategoryL1VO categoryL1VO) {
     CategoryL1 categoryL1 = getExistingCategoryL1ById(id);
     applyUpdate(categoryL1, categoryL1VO);
 
     return CategoryL1VO.fromEntity(categoryL1Repository.save(categoryL1));
-  }
-
-  private void applyPartialUpdate(CategoryL1 categoryL1, CategoryL1VO vo) {
-    if (!ObjectUtils.isEmpty(vo.getName())) {
-      categoryL1.setName(vo.getName());
-    }
   }
 
   @Transactional(propagation = Propagation.REQUIRED)

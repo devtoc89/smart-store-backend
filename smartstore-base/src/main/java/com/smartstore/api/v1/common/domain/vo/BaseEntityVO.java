@@ -5,10 +5,9 @@ import java.util.UUID;
 
 import com.smartstore.api.v1.common.domain.entity.BaseEntity;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-@AllArgsConstructor
+// use it only compound
 @Getter
 public class BaseEntityVO {
   private final UUID id;
@@ -17,12 +16,15 @@ public class BaseEntityVO {
   private final ZonedDateTime updatedAt;
   private final ZonedDateTime deletedAt;
 
+  protected <T extends BaseEntity> BaseEntityVO(T entity) {
+    this.id = entity.getId();
+    this.isDeleted = entity.getIsDeleted();
+    this.createdAt = entity.getCreatedAt();
+    this.updatedAt = entity.getUpdatedAt();
+    this.deletedAt = entity.getDeletedAt();
+  }
+
   public static <T extends BaseEntity> BaseEntityVO fromEntity(T entity) {
-    return new BaseEntityVO(
-        entity.getId(),
-        entity.getIsDeleted(),
-        entity.getCreatedAt(),
-        entity.getUpdatedAt(),
-        entity.getDeletedAt());
+    return new BaseEntityVO(entity);
   }
 }

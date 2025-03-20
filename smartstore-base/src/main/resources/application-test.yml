@@ -49,8 +49,4 @@ springdoc:
   show-actuator: true
   use-management-port: true
   default-flat-param-object: true
-
-# APP 설정 저장  
-app:
-  cors:
-    allowed-origins: http://localhost:3000,http://localhost:9090
+  

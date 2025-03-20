@@ -10,7 +10,7 @@ public class StringUtils {
 
   public static UUID stringToUUID(String uuidStr) {
     try {
-      return UUID.fromString(uuidStr);
+      return uuidStr == null ? null : UUID.fromString(uuidStr);
     } catch (IllegalArgumentException e) {
       return null;
     }
