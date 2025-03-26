@@ -68,7 +68,6 @@
       ]
     }
   ],
-  "networkMode": "awsvpc",
   "requiresCompatibilities": [
     "EC2"
   ],
