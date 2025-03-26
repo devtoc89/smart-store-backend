@@ -19,6 +19,7 @@ import com.smartstore.api.v1.common.constants.message.CommonMessage;
 import com.smartstore.api.v1.common.constants.url.AdminBaseURLConstants;
 import com.smartstore.api.v1.common.dto.ResponseWrapper;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -63,7 +64,8 @@ public class AdminController {
   }
 
   @DeleteMapping("/logout")
-  public ResponseEntity<?> logout(@AuthenticationPrincipal AdminDetails admin) {
+  @Operation(hidden = true) // Swagger 문서 제외
+  public ResponseEntity<ResponseWrapper<String>> logout(@AuthenticationPrincipal AdminDetails admin) {
     adminService.logout(admin.getAdmin().getId());
     return ResponseEntity.ok(ResponseWrapper.success("로그아웃 되었습니다."));
   }
