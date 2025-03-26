@@ -44,14 +44,13 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ secrets.ECR_REPOSITORY_URI }}/${{ env.ECS_SERVICE_NAME }}:latest
-          # target: ${{ env.SERVICE }}
+          tags: ${{ secrets.ECR_REPOSITORY_URI }}:latest
           cache-from: type=gha # 여기서 gha 는 Guthub Actions 용 캐시를 의미합니다.
           cache-to: type=gha,mode=max
 
       - name: Render ECS Task Definition with sed
         run: |
-          sed -e "s|__IMAGE_URI__|${{ env.ECR_REPOSITORY_URI }}/${{ env.ECS_SERVICE_NAME }}:latest|g" \
+          sed -e "s|__IMAGE_URI__|${{ secrets.ECR_REPOSITORY_URI }}:latest|g" \
               -e "s|__SPRING_PROFILES_ACTIVE__|${{ secrets.SPRING_PROFILES_ACTIVE }}|g" \
               -e "s|__DB_USER__|${{ secrets.DB_USER }}|g" \
               -e "s|__DB_PASS__|${{ secrets.DB_PASS }}|g" \
@@ -68,7 +67,7 @@ jobs:
         uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         with:
           task-definition: rendered-task-def.json
-          cluster: ${{ secrets.ECS_CLUSTER_NAME }} \
+          cluster: ${{ secrets.ECS_CLUSTER_NAME }}
           service: ${{ secrets.ECS_SERVICE_NAME }}
           wait-for-service-stability: true
 
