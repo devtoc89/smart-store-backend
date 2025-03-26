@@ -66,8 +66,8 @@ cloud:
     s3:
       credentials:
         region: ${AWS_REGION}
-        access-key: ${AWS_ACCESS_KEY}
-        secret-key: ${AWS_SECRET_KEY}
+        access-key: ${AWS_ACCESS_KEY:}
+        secret-key: ${AWS_SECRET_KEY:}
       bucket: ${S3_BUCKET}
     cloudfront:
       url: ${CLOUDFRONT_URL}

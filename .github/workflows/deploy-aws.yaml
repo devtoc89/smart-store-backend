@@ -45,8 +45,8 @@ jobs:
           context: ./smartstore-base
           push: true
           tags: ${{ secrets.ECR_REPOSITORY_URI }}:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=registry,ref=${{ secrets.ECR_REPOSITORY_URI }}:latest
+          cache-to: type=inline
 
       # 7. Task 정의 템플릿을 실제 값으로 치환
       - name: Render ECS Task Definition with sed
