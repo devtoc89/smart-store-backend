@@ -16,12 +16,14 @@ public class CategoryNodeVO {
   private final BaseEntityVO base;
   private final String name;
   private final UUID categoryL2Id;
+  private final Integer orderBy;
 
   public static CategoryNodeVO fromEntity(CategoryNode categoryNode) {
     return CategoryNodeVO.builder()
         .base(BaseEntityVO.fromEntity(categoryNode))
         .name(categoryNode.getName())
         .categoryL2Id(categoryNode.getId())
+        .orderBy(categoryNode.getOrderBy())
         .build();
   }
 

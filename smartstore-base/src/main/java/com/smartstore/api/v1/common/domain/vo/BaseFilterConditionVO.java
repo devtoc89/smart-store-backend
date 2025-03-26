@@ -8,6 +8,7 @@ import org.springframework.data.jpa.domain.Specification;
 
 import com.smartstore.api.v1.common.domain.entity.BaseEntity;
 import com.smartstore.api.v1.common.domain.query.BaseSpecification;
+import com.smartstore.api.v1.common.exception.BadRequestException;
 
 import lombok.Builder;
 import lombok.Data;
@@ -22,7 +23,7 @@ public class BaseFilterConditionVO {
 
   public <T extends BaseEntity> Specification<T> toSubSpecification() {
     if (fromDate != null && toDate != null && fromDate.isAfter(toDate)) {
-      throw new IllegalArgumentException("시작 날짜는 종료 날짜보다 이전이어야 합니다.");
+      throw new BadRequestException("시작 날짜는 종료 날짜보다 이전이어야 합니다.");
     }
 
     return BaseSpecification.<T>inId(ids)

@@ -1,0 +1,62 @@
+{
+  "family": "smart-store-task",
+  "networkMode": "awsvpc",
+  "containerDefinitions": [
+    {
+      "name": "smart-store-api",
+      "image": "${IMAGE_URI}",
+      "essential": true,
+      "environment": [
+        {
+          "name": "SPRING_PROFILES_ACTIVE",
+          "value": "__SPRING_PROFILES_ACTIVE__"
+        },
+        {
+          "name": "DB_URL",
+          "value": "__DB_URL__"
+        },
+        {
+          "name": "DB_USER",
+          "value": "__DB_USER__"
+        },
+        {
+          "name": "DB_PASS",
+          "value": "__DB_PASS__"
+        },
+        {
+          "name": "AWS_REGION",
+          "value": "__AWS_REGION__"
+        },
+        {
+          "name": "AWS_ACCESS_KEY",
+          "value": "__AWS_ACCESS_KEY__"
+        },
+        {
+          "name": "AWS_SECRET_KEY",
+          "value": "__AWS_SECRET_KEY__"
+        },
+        {
+          "name": "S3_BUCKET",
+          "value": "__S3_BUCKET__"
+        },
+        {
+          "name": "CLOUDFRONT_URL",
+          "value": "__CLOUDFRONT_URL__"
+        },
+        {
+          "name": "JWT_SECRET",
+          "value": "__JWT_SECRET__"
+        },
+        {
+          "name": "APP_CORS",
+          "value": "__APP_CORS__"
+        }
+      ]
+    }
+  ],
+  "requiresCompatibilities": [
+    "FARGATE"
+  ],
+  "cpu": "512",
+  "memory": "1024"
+}

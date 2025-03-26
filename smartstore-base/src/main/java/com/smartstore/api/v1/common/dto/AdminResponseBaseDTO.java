@@ -1,7 +1,7 @@
 package com.smartstore.api.v1.common.dto;
 
 import com.smartstore.api.v1.common.domain.vo.BaseEntityVO;
-import com.smartstore.api.v1.common.utils.DateUtils;
+import com.smartstore.api.v1.common.utils.date.DateUtil;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.MappedSuperclass;
@@ -37,9 +37,9 @@ public class AdminResponseBaseDTO {
 
   protected <T extends BaseEntityVO> AdminResponseBaseDTO(T baseEntity) {
     this.id = baseEntity.getId().toString();
-    this.createdAt = DateUtils.formatWithDefaultZone(baseEntity.getCreatedAt());
-    this.updatedAt = DateUtils.formatWithDefaultZone(baseEntity.getUpdatedAt());
-    this.deletedAt = DateUtils.formatWithDefaultZone(baseEntity.getDeletedAt());
+    this.createdAt = DateUtil.formatWithDefaultZone(baseEntity.getCreatedAt());
+    this.updatedAt = DateUtil.formatWithDefaultZone(baseEntity.getUpdatedAt());
+    this.deletedAt = DateUtil.formatWithDefaultZone(baseEntity.getDeletedAt());
     this.isDeleted = baseEntity.getIsDeleted();
   }
 }

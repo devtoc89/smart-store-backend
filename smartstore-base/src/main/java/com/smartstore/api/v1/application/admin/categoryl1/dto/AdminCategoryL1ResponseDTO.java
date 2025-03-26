@@ -25,9 +25,13 @@ public class AdminCategoryL1ResponseDTO extends AdminResponseBaseDTO {
   @Schema(description = "1차 카테고리 이름", example = "전자제품")
   private String name;
 
+  @Schema(description = "1차 카테고리 정렬 순서서", example = "2")
+  private Integer orderBy;
+
   public AdminCategoryL1ResponseDTO(CategoryL1VO vo) {
     super(vo.getBase());
     this.name = vo.getName();
+    this.orderBy = vo.getOrderBy();
   }
 
   public static Page<AdminCategoryL1ResponseDTO> fromVOWithPage(Page<CategoryL1VO> voList) {

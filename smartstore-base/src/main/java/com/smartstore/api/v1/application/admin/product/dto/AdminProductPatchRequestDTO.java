@@ -1,5 +1,7 @@
 package com.smartstore.api.v1.application.admin.product.dto;
 
+import java.util.List;
+
 import com.smartstore.api.v1.application.admin.product.dto.base.AdminProductUpsertRequestDTOIF;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -28,4 +30,8 @@ public class AdminProductPatchRequestDTO implements AdminProductUpsertRequestDTO
 
   @Schema(description = "카테고리 말단 ID", example = "\"550e8400-e29b-41d4-a716-446655440000\"")
   private String categoryId;
+
+  @Schema(description = "첨부 이미지 ", example = "")
+  private List<AdminProductWithImageDTO> images;
+
 }

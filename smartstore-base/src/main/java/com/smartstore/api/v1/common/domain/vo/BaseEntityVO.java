@@ -6,9 +6,11 @@ import java.util.UUID;
 import com.smartstore.api.v1.common.domain.entity.BaseEntity;
 
 import lombok.Getter;
+import lombok.experimental.SuperBuilder;
 
 // use it only compound
 @Getter
+@SuperBuilder
 public class BaseEntityVO {
   private final UUID id;
   private final Boolean isDeleted;

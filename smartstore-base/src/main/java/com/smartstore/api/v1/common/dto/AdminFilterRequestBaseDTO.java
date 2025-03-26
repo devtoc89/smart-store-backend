@@ -3,14 +3,16 @@ package com.smartstore.api.v1.common.dto;
 import java.util.List;
 import java.util.Objects;
 
+import com.smartstore.api.v1.common.constants.enums.ActiveStatus;
 import com.smartstore.api.v1.common.domain.vo.BaseFilterConditionVO;
-import com.smartstore.api.v1.common.utils.DateUtils;
-import com.smartstore.api.v1.common.utils.StringUtils;
+import com.smartstore.api.v1.common.utils.date.DateUtil;
+import com.smartstore.api.v1.common.utils.string.StringUtil;
 import com.smartstore.api.v1.common.validation.date.ValidDateTime;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.MappedSuperclass;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -36,17 +38,25 @@ public class AdminFilterRequestBaseDTO {
   @ValidDateTime(message = "종료 날짜 형식이 올바르지 않습니다. (yyyy-MM-dd HH:mm:ss)")
   private String to;
 
-  @Schema(description = "삭제 여부 필터 (true: 삭제된 항목 포함, false: 삭제되지 않은 항목만)", example = "false")
-  private Boolean isDeleted;
+  @Builder.Default
+  @Schema(description = "삭제 여부 필터 (ACTIVE: 삭제된 항목 포함, INACTIVE: 삭제되지 않은 항목만, ALL: 전체)", example = "ACTIVE")
+  private ActiveStatus activeStatus = ActiveStatus.ACTIVE;
+
+  private Boolean convertActiveStatusToisDeleted() {
+    if (this.activeStatus == null || this.activeStatus == ActiveStatus.ALL) {
+      return null;
+    }
+    return (this.activeStatus != ActiveStatus.ACTIVE);
+  }
 
   public BaseFilterConditionVO toBaseFilterConditionVO() {
     return BaseFilterConditionVO.builder()
-        .fromDate(DateUtils.parseWithDefaultZone(from))
-        .toDate(DateUtils.parseWithDefaultZone(to))
-        .isDeleted(isDeleted)
+        .fromDate(DateUtil.parseWithDefaultZone(from))
+        .toDate(DateUtil.parseWithDefaultZone(to))
+        .isDeleted(convertActiveStatusToisDeleted())
         .ids(id == null ? null
             : id.stream()
-                .map(StringUtils::stringToUUID)
+                .map(StringUtil::stringToUUID)
                 .filter(Objects::nonNull)
                 .toList())
         .build();

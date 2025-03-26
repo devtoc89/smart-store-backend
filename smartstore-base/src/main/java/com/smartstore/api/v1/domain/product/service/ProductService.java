@@ -1,75 +1,105 @@
 package com.smartstore.api.v1.domain.product.service;
 
-import org.springframework.data.domain.Pageable;
-
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 
+import com.smartstore.api.v1.common.config.CloudFrontProperties;
 import com.smartstore.api.v1.domain.product.entity.Product;
 import com.smartstore.api.v1.domain.product.repository.ProductRepository;
 import com.smartstore.api.v1.domain.product.vo.ProductFilterConditionVO;
 import com.smartstore.api.v1.domain.product.vo.ProductVO;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class ProductService {
 
+  @PersistenceContext
+  private EntityManager entityManager;
   private final ProductRepository productRepository;
+  private final CloudFrontProperties cloudFrontProperties;
 
-  public ProductService(ProductRepository productRepository) {
-    this.productRepository = productRepository;
+  public void applyUpdate(Product entity, ProductVO vo) {
+    entity.setName(vo.getName());
+    entity.setPrice(vo.getPrice());
+    entity.setCategoryId(vo.getCategoryId());
   }
 
-  private Product getExistingProductById(UUID id) {
+  public void applyPartialUpdate(Product entity, ProductVO vo) {
+    if (!ObjectUtils.isEmpty(vo.getName())) {
+      entity.setName(vo.getName());
+    }
+    if (!ObjectUtils.isEmpty(vo.getPrice())) {
+      entity.setPrice(vo.getPrice());
+    }
+    if (!ObjectUtils.isEmpty(vo.getCategoryId())) {
+      entity.setCategoryId(vo.getCategoryId());
+    }
+  }
+
+  private Product findByIdOrExcept(UUID id) {
     return productRepository.findById(id).orElseThrow(() -> new NoSuchElementException("해당하는 상품은 존재하지 않습니다."));
   }
 
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-  public ProductVO findProductById(UUID id) {
-    return ProductVO.fromEntity(getExistingProductById(id));
+  public boolean isExist(UUID id) {
+    return productRepository.existsById(id);
   }
 
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-  public Page<ProductVO> findProductsByCondition(ProductFilterConditionVO condition, Pageable pageable) {
-    return ProductVO.fromEntityWithPage(productRepository.findAll(condition.toSpecification(), pageable));
+  public ProductVO findById(UUID id) {
+    return ProductVO.fromEntity(findByIdOrExcept(id), cloudFrontProperties.getUrl());
+  }
+
+  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+  public Page<ProductVO> findManyByCondition(ProductFilterConditionVO condition, Pageable pageable) {
+    return ProductVO.fromEntityWithPage(productRepository.findAll(condition.toSpecification(), pageable),
+        cloudFrontProperties.getUrl());
   }
 
   @Transactional(propagation = Propagation.REQUIRED)
-  public ProductVO createProduct(ProductVO productVO) {
-    Product newProduct = Product.builder()
-        .name(productVO.getName())
-        .price(productVO.getPrice())
-        .categoryId(productVO.getCategoryId())
+  public ProductVO create(UUID id, ProductVO vo) {
+    var newProduct = Product.builder()
+        .id(id)
+        .name(vo.getName())
+        .price(vo.getPrice())
+        .categoryId(vo.getCategoryId())
         .build();
 
-    return ProductVO.fromEntity(productRepository.saveAndFlush(newProduct));
+    return ProductVO.fromEntity(productRepository.save(newProduct), cloudFrontProperties.getUrl());
   }
 
   @Transactional(propagation = Propagation.REQUIRED)
-  public ProductVO replaceProduct(UUID id, ProductVO productVO) {
-    Product product = getExistingProductById(id);
-    product.applyUpdate(productVO);
+  public ProductVO replace(UUID id, ProductVO vo) {
+    Product product = findByIdOrExcept(id);
+    applyUpdate(product, vo);
 
-    return ProductVO.fromEntity(productRepository.save(product));
+    return ProductVO.fromEntity(productRepository.save(product), cloudFrontProperties.getUrl());
   }
 
   @Transactional(propagation = Propagation.REQUIRED)
-  public ProductVO modifyProduct(UUID id, ProductVO productVO) {
-    Product product = getExistingProductById(id);
-    product.applyPartialUpdate(productVO);
+  public ProductVO modify(UUID id, ProductVO vo) {
+    Product product = findByIdOrExcept(id);
+    applyPartialUpdate(product, vo);
 
-    return ProductVO.fromEntity(productRepository.save(product));
+    return ProductVO.fromEntity(productRepository.save(product), cloudFrontProperties.getUrl());
   }
 
   @Transactional(propagation = Propagation.REQUIRED)
-  public ProductVO deleteProduct(UUID id) {
-    Product product = getExistingProductById(id);
+  public ProductVO delete(UUID id) {
+    Product product = findByIdOrExcept(id);
     product.markDelete();
 
-    return ProductVO.fromEntity(productRepository.save(product));
+    return ProductVO.fromEntity(productRepository.save(product), cloudFrontProperties.getUrl());
   }
 }

@@ -18,8 +18,10 @@ import com.smartstore.api.v1.domain.category.vo.CategoryNodeVO;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class CategoryNodeService {
 
   @PersistenceContext
@@ -27,77 +29,72 @@ public class CategoryNodeService {
 
   private final CategoryNodeRepository categoryNodeRepository;
 
-  public CategoryNodeService(CategoryNodeRepository categoryNodeRepository) {
-    this.categoryNodeRepository = categoryNodeRepository;
-  }
-
-  private CategoryNode getExistingCategoryNodeById(UUID id) {
-    return categoryNodeRepository.findById(id)
-        .orElseThrow(() -> new NoSuchElementException("해당하는 카테고리(말단)가 존재하지 않습니다."));
-  }
-
-  private void applyUpdate(CategoryNode categoryNode, CategoryNodeVO vo) {
+  private CategoryNode applyUpdate(CategoryNode categoryNode, CategoryNodeVO vo) {
     categoryNode.setName(vo.getName());
     categoryNode.setCategoryL2(entityManager.getReference(CategoryL2.class, vo.getCategoryL2Id()));
+    return categoryNode;
   }
 
-  private void applyPartialUpdate(CategoryNode categoryNode, CategoryNodeVO vo) {
+  private CategoryNode applyPartialUpdate(CategoryNode categoryNode, CategoryNodeVO vo) {
     if (!ObjectUtils.isEmpty(vo.getName())) {
       categoryNode.setName(vo.getName());
     }
     if (!ObjectUtils.isEmpty(vo.getCategoryL2Id())) {
       categoryNode.setCategoryL2(entityManager.getReference(CategoryL2.class, vo.getCategoryL2Id()));
     }
+    return categoryNode;
+  }
+
+  private CategoryNode findByIdOrExcept(UUID id) {
+    return categoryNodeRepository.findById(id)
+        .orElseThrow(() -> new NoSuchElementException("해당하는 카테고리(말단)가 존재하지 않습니다."));
   }
 
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-  public boolean isExistsCategoryNodeById(UUID id) {
+  public boolean isExist(UUID id) {
     return categoryNodeRepository.existsById(id);
   }
 
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-  public CategoryNodeVO findCategoryNodeById(UUID id) {
-    return CategoryNodeVO.fromEntity(getExistingCategoryNodeById(id));
+  public CategoryNodeVO findById(UUID id) {
+    return CategoryNodeVO.fromEntity(findByIdOrExcept(id));
   }
 
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-  public Page<CategoryNodeVO> findCategoryNodesByCondition(CategoryNodeFilterConditionVO condition, Pageable pageable) {
+  public Page<CategoryNodeVO> findManyByCondition(CategoryNodeFilterConditionVO condition, Pageable pageable) {
     return CategoryNodeVO.fromEntityWithPage(categoryNodeRepository.findAll(condition.toSpecification(), pageable));
   }
 
-  private CategoryNode create(CategoryNodeVO vo) {
-    return CategoryNode.builder()
+  @Transactional(propagation = Propagation.REQUIRED)
+  public CategoryNodeVO create(UUID id, CategoryNodeVO vo) {
+    var entity = CategoryNode.builder()
+        .id(id)
         .name(vo.getName())
         .categoryL2(entityManager.getReference(CategoryL2.class, vo.getCategoryL2Id()))
         .build();
+
+    return CategoryNodeVO.fromEntity(categoryNodeRepository.save(entity));
   }
 
   @Transactional(propagation = Propagation.REQUIRED)
-  public CategoryNodeVO createCategoryNode(CategoryNodeVO vo) {
-    return CategoryNodeVO.fromEntity(categoryNodeRepository.save(create(vo)));
+  public CategoryNodeVO replace(UUID id, CategoryNodeVO vo) {
+    var entity = applyUpdate(findByIdOrExcept(id), vo);
+
+    return CategoryNodeVO.fromEntity(categoryNodeRepository.save(entity));
   }
 
   @Transactional(propagation = Propagation.REQUIRED)
-  public CategoryNodeVO replaceCategoryNode(UUID id, CategoryNodeVO vo) {
-    CategoryNode categoryNode = getExistingCategoryNodeById(id);
-    applyUpdate(categoryNode, vo);
+  public CategoryNodeVO modify(UUID id, CategoryNodeVO vo) {
+    var entity = applyPartialUpdate(findByIdOrExcept(id), vo);
 
-    return CategoryNodeVO.fromEntity(categoryNodeRepository.save(categoryNode));
+    return CategoryNodeVO.fromEntity(categoryNodeRepository.save(entity));
   }
 
   @Transactional(propagation = Propagation.REQUIRED)
-  public CategoryNodeVO modifyCategoryNode(UUID id, CategoryNodeVO vo) {
-    CategoryNode categoryNode = getExistingCategoryNodeById(id);
-    applyPartialUpdate(categoryNode, vo);
+  public CategoryNodeVO delete(UUID id) {
+    var entity = findByIdOrExcept(id);
+    entity.markDelete();
 
-    return CategoryNodeVO.fromEntity(categoryNodeRepository.save(categoryNode));
-  }
-
-  @Transactional(propagation = Propagation.REQUIRED)
-  public CategoryNodeVO deleteCategoryNode(UUID id) {
-    CategoryNode categoryNode = getExistingCategoryNodeById(id);
-    categoryNode.markDelete();
-
-    return CategoryNodeVO.fromEntity(categoryNodeRepository.save(categoryNode));
+    return CategoryNodeVO.fromEntity(categoryNodeRepository.save(entity));
   }
 }

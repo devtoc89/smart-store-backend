@@ -14,57 +14,57 @@ import com.smartstore.api.v1.application.admin.categorynode.dto.AdminCategoryNod
 import com.smartstore.api.v1.application.admin.categorynode.dto.AdminCategoryNodeResponseDTO;
 import com.smartstore.api.v1.domain.category.service.CategoryNodeService;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class AdminCategoryNodeAppService {
 
   private final CategoryNodeService categoryNodeService;
 
-  public AdminCategoryNodeAppService(CategoryNodeService categoryNodeService) {
-    this.categoryNodeService = categoryNodeService;
-  }
-
   @Transactional(readOnly = true)
-  public AdminCategoryNodeResponseDTO getCategoryNodeById(String id) {
+  public AdminCategoryNodeResponseDTO get(String id) {
     return AdminCategoryNodeResponseDTO.fromVO(
-        categoryNodeService.findCategoryNodeById(UUID.fromString(id)));
+        categoryNodeService.findById(UUID.fromString(id)));
   }
 
   @Transactional(readOnly = true)
-  public Page<AdminCategoryNodeResponseDTO> getCategoryNodesByFilterWithPaging(
+  public Page<AdminCategoryNodeResponseDTO> getList(
       AdminCategoryNodeFilterRequestDTO searchRequest, Pageable pageable) {
     return AdminCategoryNodeResponseDTO.fromVOWithPage(
-        categoryNodeService.findCategoryNodesByCondition(
+        categoryNodeService.findManyByCondition(
             searchRequest.toSearchConditionVO(), pageable));
   }
 
   @Transactional
-  public AdminCategoryNodeResponseDTO postCategoryNode(
+  public AdminCategoryNodeResponseDTO post(
       AdminCategoryNodePostRequestDTO postRequestDTO) {
+    var id = UUID.randomUUID();
     return AdminCategoryNodeResponseDTO.fromVO(
-        categoryNodeService.createCategoryNode(
+        categoryNodeService.create(id,
             postRequestDTO.toVO()));
   }
 
   @Transactional
-  public AdminCategoryNodeResponseDTO putCategoryNode(String id,
+  public AdminCategoryNodeResponseDTO put(String id,
       AdminCategoryNodePutRequestDTO putRequestDTO) {
     return AdminCategoryNodeResponseDTO.fromVO(
-        categoryNodeService.replaceCategoryNode(
+        categoryNodeService.replace(
             UUID.fromString(id), putRequestDTO.toVO()));
   }
 
   @Transactional
-  public AdminCategoryNodeResponseDTO patchCategoryNode(String id,
+  public AdminCategoryNodeResponseDTO patch(String id,
       AdminCategoryNodePatchRequestDTO putRequestDTO) {
     return AdminCategoryNodeResponseDTO.fromVO(
-        categoryNodeService.modifyCategoryNode(
+        categoryNodeService.modify(
             UUID.fromString(id), putRequestDTO.toVO()));
   }
 
   @Transactional
-  public AdminCategoryNodeResponseDTO deleteCategoryNode(String id) {
+  public AdminCategoryNodeResponseDTO delete(String id) {
     return AdminCategoryNodeResponseDTO.fromVO(
-        categoryNodeService.deleteCategoryNode(
+        categoryNodeService.delete(
             UUID.fromString(id)));
   }
 }

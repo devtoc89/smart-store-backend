@@ -8,6 +8,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -18,6 +19,7 @@ import lombok.experimental.SuperBuilder;
 @Setter
 @NoArgsConstructor
 @SuperBuilder
+@EqualsAndHashCode
 public abstract class BaseEntity {
 
   @Id
@@ -34,12 +36,7 @@ public abstract class BaseEntity {
 
   private ZonedDateTime deletedAt;
 
-  private boolean isOnCreate() {
-    return id == null;
-  }
-
   private void onCreate() {
-    id = UUID.randomUUID(); // UUID 자동 생성
     createdAt = ZonedDateTime.now();
     updatedAt = createdAt;
   }
@@ -64,8 +61,9 @@ public abstract class BaseEntity {
 
   @PrePersist
   public void prePersist() {
-    if (isOnCreate()) {
-      onCreate();
+    onCreate();
+    if (id == null) {
+      id = UUID.randomUUID(); // UUID 자동 생성
     }
     if (isOnDelete()) { // isDeleted 기본값 보장
       markDelete();
@@ -84,18 +82,4 @@ public abstract class BaseEntity {
     }
   }
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o)
-      return true;
-    if (o == null || getClass() != o.getClass())
-      return false;
-    BaseEntity entity = (BaseEntity) o;
-    return id != null && id.equals(entity.id);
-  }
-
-  @Override
-  public int hashCode() {
-    return id != null ? id.hashCode() : 0;
-  }
 }

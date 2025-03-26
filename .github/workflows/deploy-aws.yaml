@@ -1,0 +1,92 @@
+name: Deploy Service
+
+on:
+  push:
+    branches:
+      - dev/deploy
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: 21
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. 코드 체크아웃
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 3. 서비스 식별
+      # - name: Identify service
+      #   id: service
+      #   run: |
+      #     if [[ "${{ github.ref_name }}" == "dev/deploy" ]]; then
+      #       echo "SERVICE=dev" >> $GITHUB_ENV
+      #     elif [[ "${{ github.ref_name }}" == "prd/deploy" ]]; then
+      #       echo "SERVICE=prd" >> $GITHUB_ENV
+      #     else
+      #       echo "Unknown branch. Exiting."
+      #       exit 1
+      #     fi
+      #   shell: bash
+        
+      # 3. AWS CLI 설정
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      # 4. Docker 로그인
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        
+      # 6. Docker 빌드 및 푸시
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ secrets.ECR_REPOSITORY_URI }}/${{ env.SERVICE }}:latest
+          # target: ${{ env.SERVICE }}
+          cache-from: type=gha # 여기서 gha 는 Guthub Actions 용 캐시를 의미합니다.
+          cache-to: type=gha,mode=max
+
+      - name: Render ECS Task Definition with sed
+        run: |
+          sed -e "s|__IMAGE_URI__|${{ env.ECR_REPOSITORY_URI }}/${{ env.SERVICE }}:latest|g" \
+              -e "s|__SPRING_PROFILES_ACTIVE__|${{ secrets.SPRING_PROFILES_ACTIVE }}|g" \
+              -e "s|__DB_USER__|${{ secrets.DB_USER }}|g" \
+              -e "s|__DB_PASS__|${{ secrets.DB_PASS }}|g" \
+              -e "s|__AWS_ACCESS_KEY__|${{ secrets.AWS_ACCESS_KEY }}|g" \
+              -e "s|__AWS_SECRET_KEY__|${{ secrets.AWS_SECRET_KEY }}|g" \
+              -e "s|__AWS_REGION__|${{ secrets.AWS_REGION }}|g" \
+              -e "s|__S3_BUCKET__|${{ secrets.S3_BUCKET }}|g" \
+              -e "s|__CLOUDFRONT_URL__|${{ secrets.CLOUDFRONT_URL }}|g" \
+              -e "s|__JWT_SECRET__|${{ secrets.JWT_SECRET }}|g" \
+              -e "s|__APP_CORS__|${{ secrets.APP_CORS }}|g" \
+              .github/ecs-task-definition.json.template > rendered-task-def.json
+
+      - name: Register ECS Task Definition
+        uses: aws-actions/amazon-ecs-register-task-definition@v1
+        with:
+          task-definition: rendered-task-def.json
+
+
+      # 8. ECS 서비스 업데이트
+      - name: Deploy to Amazon ECS
+        run: |
+          aws ecs update-service \
+            --cluster ${{ secrets.ECS_CLUSTER_NAME }} \
+            --service ${{ secrets.ECS_SERVICE_NAME_PREFIX }}-${{ env.SERVICE }}-service \
+            --force-new-deployment

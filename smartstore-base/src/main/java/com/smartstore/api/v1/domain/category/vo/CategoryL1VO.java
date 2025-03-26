@@ -13,11 +13,13 @@ import lombok.Getter;
 public class CategoryL1VO {
   private final BaseEntityVO base;
   private final String name;
+  private final Integer orderBy;
 
   public static CategoryL1VO fromEntity(CategoryL1 categoryL1) {
     return CategoryL1VO.builder()
         .base(BaseEntityVO.fromEntity(categoryL1))
         .name(categoryL1.getName())
+        .orderBy(categoryL1.getOrderBy())
         .build();
   }
 

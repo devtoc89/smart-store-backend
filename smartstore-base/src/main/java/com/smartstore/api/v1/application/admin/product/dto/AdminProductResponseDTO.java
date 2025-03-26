@@ -1,7 +1,11 @@
 package com.smartstore.api.v1.application.admin.product.dto;
 
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 
+import com.smartstore.api.v1.application.admin.productimage.dto.AdminProductImageResponseDTO;
 import com.smartstore.api.v1.common.dto.AdminResponseBaseDTO;
 import com.smartstore.api.v1.domain.product.vo.ProductVO;
 
@@ -31,12 +35,20 @@ public class AdminProductResponseDTO extends AdminResponseBaseDTO {
   @Schema(description = "상품 가격", example = "1000")
   private Integer price;
 
+  @Schema(description = "첨부 이미지 ID 목록", example = "[\"550e8400-e29b-41d4-a716-446655440000\", \"660e8400-e29b-41d4-a716-446655440001\"]")
+  private List<AdminProductImageResponseDTO> images;
+
   public AdminProductResponseDTO(ProductVO product) {
     super(product.getBase());
     this.name = product.getName();
     this.price = product.getPrice();
     this.categoryId = product.getCategoryId().toString();
 
+    this.images = Optional.ofNullable(product.getImages())
+        .map(images -> images.stream()
+            .map(AdminProductImageResponseDTO::fromVO)
+            .toList())
+        .orElse(null);
   }
 
   public static Page<AdminProductResponseDTO> fromVOWithPage(Page<ProductVO> products) {

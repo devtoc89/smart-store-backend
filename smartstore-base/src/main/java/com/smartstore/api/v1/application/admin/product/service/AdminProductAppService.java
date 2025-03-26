@@ -1,7 +1,10 @@
 package com.smartstore.api.v1.application.admin.product.service;
 
+import java.util.Collections;
+import java.util.Optional;
 import java.util.UUID;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -13,9 +16,11 @@ import com.smartstore.api.v1.application.admin.product.dto.AdminProductPatchRequ
 import com.smartstore.api.v1.application.admin.product.dto.AdminProductPostRequestDTO;
 import com.smartstore.api.v1.application.admin.product.dto.AdminProductPutRequestDTO;
 import com.smartstore.api.v1.application.admin.product.dto.AdminProductResponseDTO;
-import com.smartstore.api.v1.common.utils.StringUtils;
-import com.smartstore.api.v1.common.utils.ValidationUtil;
+import com.smartstore.api.v1.application.admin.productimage.dto.AdminProductImageResponseDTO;
+import com.smartstore.api.v1.common.utils.string.StringUtil;
+import com.smartstore.api.v1.common.utils.validation.ValidationUtil;
 import com.smartstore.api.v1.domain.category.service.CategoryNodeService;
+import com.smartstore.api.v1.domain.product.service.ProductImageService;
 import com.smartstore.api.v1.domain.product.service.ProductService;
 
 import lombok.RequiredArgsConstructor;
@@ -24,60 +29,81 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AdminProductAppService {
 
+  private final ProductImageService productImageService;
+
   private final ProductService productService;
   private final CategoryNodeService categoryNodeService;
 
   private void validateCategory(String categoryId) throws BindException {
-    if (!categoryNodeService.isExistsCategoryNodeById(StringUtils.stringToUUID(categoryId))) {
+    if (ObjectUtils.isEmpty(categoryId) || !categoryNodeService.isExist(StringUtil.stringToUUID(categoryId))) {
       throw ValidationUtil.createBindException(this, "categoryId", "카테고리(말단)의 ID가 유효하지 않습니다.");
     }
   }
 
   @Transactional(readOnly = true)
-  public AdminProductResponseDTO getProductById(String id) {
+  public AdminProductResponseDTO get(String id) {
     return AdminProductResponseDTO.fromVO(
-        productService.findProductById(UUID.fromString(id)));
+        productService.findById(UUID.fromString(id)));
   }
 
   @Transactional(readOnly = true)
-  public Page<AdminProductResponseDTO> getProductsByFilterWithPaging(
-      AdminProductFilterRequestDTO searchRequest, Pageable pageable) {
+  public Page<AdminProductResponseDTO> getList(
+      AdminProductFilterRequestDTO dto, Pageable pageable) {
     return AdminProductResponseDTO.fromVOWithPage(
-        productService.findProductsByCondition(
-            searchRequest.toSearchConditionVO(), pageable));
+        productService.findManyByCondition(
+            dto.toSearchConditionVO(), pageable));
   }
 
   @Transactional
-  public AdminProductResponseDTO postProduct(
-      AdminProductPostRequestDTO postRequestDTO) throws BindException {
-    validateCategory(postRequestDTO.getCategoryId());
-    return AdminProductResponseDTO.fromVO(
-        productService.createProduct(
-            postRequestDTO.toVO()));
+  public AdminProductResponseDTO post(
+      AdminProductPostRequestDTO dto) throws BindException {
+    validateCategory(dto.getCategoryId());
+    var id = UUID.randomUUID();
+    var response = AdminProductResponseDTO.fromVO(
+        productService.create(id,
+            dto.toVO()));
+
+    var imagesVO = Optional.ofNullable(dto.makeImageVOList(id)).map(images -> images.stream()
+        .map(productImageService::create)
+        .map(AdminProductImageResponseDTO::new)
+        .toList()).orElse(Collections.emptyList());
+    response.setImages(imagesVO);
+    return response;
   }
 
   @Transactional
-  public AdminProductResponseDTO putProduct(String id,
-      AdminProductPutRequestDTO putRequestDTO) throws BindException {
-    validateCategory(putRequestDTO.getCategoryId());
-    return AdminProductResponseDTO.fromVO(
-        productService.replaceProduct(
-            UUID.fromString(id), putRequestDTO.toVO()));
+  public AdminProductResponseDTO put(String productId,
+      AdminProductPutRequestDTO dto) throws BindException {
+    validateCategory(dto.getCategoryId());
+    var id = UUID.fromString(productId);
+    var response = AdminProductResponseDTO.fromVO(
+        productService.replace(id,
+            dto.toVO()));
+    productImageService.deleteByProductId(id);
+    var imagesVO = Optional.ofNullable(dto.makeImageVOList(id)).map(images -> images.stream()
+        .map(productImageService::create)
+        .map(AdminProductImageResponseDTO::new)
+        .toList()).orElse(Collections.emptyList());
+    response.setImages(imagesVO);
+    return response;
   }
 
   @Transactional
-  public AdminProductResponseDTO patchProduct(String id,
-      AdminProductPatchRequestDTO putRequestDTO) throws BindException {
-    validateCategory(putRequestDTO.getCategoryId());
+  public AdminProductResponseDTO patch(String id,
+      AdminProductPatchRequestDTO dto) throws BindException {
+    if (!ObjectUtils.isEmpty(dto.getCategoryId())) {
+      validateCategory(dto.getCategoryId());
+    }
+    // TODO: 이미지 관리 방안(처리 플로우가 뭐가 좋을까.)
     return AdminProductResponseDTO.fromVO(
-        productService.modifyProduct(
-            UUID.fromString(id), putRequestDTO.toVO()));
+        productService.modify(
+            UUID.fromString(id), dto.toVO()));
   }
 
   @Transactional
-  public AdminProductResponseDTO deleteProduct(String id) {
+  public AdminProductResponseDTO delete(String id) {
     return AdminProductResponseDTO.fromVO(
-        productService.deleteProduct(
+        productService.delete(
             UUID.fromString(id)));
   }
 }

@@ -2,22 +2,21 @@ server:
   port: 8080
   servlet:
     encoding:
-      charset: EUC-KR
+      charset: UTF-8
       enabled: true
       force: true
 spring:
   profiles:
-    active: local  # 현재 실행할 프로파일 설정
+    active: ${SPRING_PROFILES_ACTIVE:prod}
   application:
     name: smart-store
   docker:
     compose:
       enabled: false  # Docker Compose 자동 실행 비활성화
-      
   datasource:
-    url: jdbc:postgresql://localhost:5432/mydatabase
-    username: myuser
-    password: secret
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASS}
     driver-class-name: org.postgresql.Driver
     hikari:
       connection-timeout: 20000  # 20초 동안 연결이 없으면 타임아웃
@@ -25,11 +24,60 @@ spring:
       maximum-pool-size: 20      # 최대 커넥션 개수
       idle-timeout: 30000        # 30초 동안 미사용 시 커넥션 제거
   jpa:
+    hibernate:
+      ddl-auto: validate  # 운영에서는 update 사용 금지, validate 권장
+    show-sql: false
     properties:
       hibernate:
-        format_sql: true  # Correct way to escape special characters
+        hbm2ddl: 
+          auto: none
         jdbc:
           batch_size: 50  # 한 번에 50개씩 일괄 처리 (Batch Insert & Update)
           order_inserts: true  # INSERT 쿼리 최적화
           order_updates: true  # UPDATE 쿼리 최적화
     open-in-view: false   # Open-Session-In-View 패턴 비활성화 
+  threads:
+    virtual:
+      enabled: true
+hibernate:
+  transaction:
+    jta:
+      platform: org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,info,metrics,prometheus"  #  운영 환경에서는 제한된 엔드포인트만 공개
+  endpoint:
+    health:
+      show-details: always  #  자세한 시스템 정보 숨김
+  security:
+    enabled: true  #  보안을 적용하여 접근 제한
+
+
+logging:
+  level:
+    org.hibernate.SQL: ERROR  # SQL 실행 중 오류만 로그에 남김
+    org.hibernate.orm.jdbc.bind: ERROR  # SQL 바인딩 값 로그 비활성화
+
+cloud:
+  aws:
+    s3:
+      credentials:
+        region: ${AWS_REGION}
+        access-key: ${AWS_ACCESS_KEY}
+        secret-key: ${AWS_SECRET_KEY}
+      bucket: ${S3_BUCKET}
+    cloudfront:
+      url: ${CLOUDFRONT_URL}
+
+jwt:
+  secret: ${JWT_SECRET}
+  validity:
+    access_token: ${JWT_ACCESS_TOKEN_VALIDITY:86400000} ## 1일
+    refresh_token: ${JWT_REFRESH_TOKEN_VALIDITY:604800000} ## 7일
+
+app:
+  cors:
+    allowed-origins: ${APP_CORS}

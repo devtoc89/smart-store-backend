@@ -20,14 +20,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.smartstore.api.v1.application.admin._config.constants.BaseURLConstants;
 import com.smartstore.api.v1.application.admin.categoryl2.dto.AdminCategoryL2FilterRequestDTO;
 import com.smartstore.api.v1.application.admin.categoryl2.dto.AdminCategoryL2PatchRequestDTO;
 import com.smartstore.api.v1.application.admin.categoryl2.dto.AdminCategoryL2PostRequestDTO;
 import com.smartstore.api.v1.application.admin.categoryl2.dto.AdminCategoryL2PutRequestDTO;
 import com.smartstore.api.v1.application.admin.categoryl2.dto.AdminCategoryL2ResponseDTO;
 import com.smartstore.api.v1.application.admin.categoryl2.service.AdminCategoryL2AppService;
-import com.smartstore.api.v1.common.domain.dto.CustomErrorResponseDTO;
+import com.smartstore.api.v1.common.constants.message.CommonMessage;
+import com.smartstore.api.v1.common.constants.url.AdminBaseURLConstants;
+import com.smartstore.api.v1.common.dto.CustomErrorResponseDTO;
 import com.smartstore.api.v1.common.dto.ResponseWrapper;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -38,26 +39,24 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import lombok.RequiredArgsConstructor;
 
 class Config {
-  protected static final String BASE_URL = BaseURLConstants.BASE_URL + "/categories/l2";
+  protected static final String BASE_URL = AdminBaseURLConstants.BASE_URL + "/categories/l2";
 
   private Config() {
-    throw new UnsupportedOperationException("This is a constants class and cannot be instantiated");
+    throw new UnsupportedOperationException(CommonMessage.CANNOT_INITIALIZE_CONSTANTS_CLASS_MSG);
   }
 }
 
 @Validated
 @RestController
+@RequiredArgsConstructor
 @RequestMapping(Config.BASE_URL)
 @Tag(name = "Admin Category L2 API", description = "2차 카테고리 관리 API")
 public class AdminCategoryL2Controller {
 
-  private final AdminCategoryL2AppService adminCategoryL2Facade;
-
-  public AdminCategoryL2Controller(AdminCategoryL2AppService adminCategoryL2Facade) {
-    this.adminCategoryL2Facade = adminCategoryL2Facade;
-  }
+  private final AdminCategoryL2AppService adminCategoryL2AppService;
 
   @GetMapping("")
   @Operation(summary = "2차 카테고리 목록 조회", description = "필터를 적용하여 2차 카테고리 목록을 페이지네이션하여 조회합니다.")
@@ -65,8 +64,8 @@ public class AdminCategoryL2Controller {
   @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content(schema = @Schema(implementation = CustomErrorResponseDTO.class)))
   public ResponseEntity<ResponseWrapper<Page<AdminCategoryL2ResponseDTO>>> searchCategoryL2s(
       @ModelAttribute @Valid AdminCategoryL2FilterRequestDTO searchRequest,
-      @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-    Page<AdminCategoryL2ResponseDTO> result = adminCategoryL2Facade.getCategoryL2sByFilterWithPaging(searchRequest,
+      @PageableDefault(size = 20, sort = "orderBy", direction = Sort.Direction.ASC) Pageable pageable) {
+    Page<AdminCategoryL2ResponseDTO> result = adminCategoryL2AppService.getCategoryL2sByFilterWithPaging(searchRequest,
         pageable);
     return ResponseEntity.ok(ResponseWrapper.success(result));
   }
@@ -77,7 +76,7 @@ public class AdminCategoryL2Controller {
   @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content(schema = @Schema(implementation = CustomErrorResponseDTO.class)))
   public ResponseEntity<ResponseWrapper<AdminCategoryL2ResponseDTO>> postCategoryL2(
       @RequestBody @Valid AdminCategoryL2PostRequestDTO requestDTO) {
-    AdminCategoryL2ResponseDTO result = adminCategoryL2Facade.postCategoryL2(requestDTO);
+    AdminCategoryL2ResponseDTO result = adminCategoryL2AppService.postCategoryL2(requestDTO);
     URI location = URI.create(Config.BASE_URL + "/" + result.getId());
     return ResponseEntity.created(location).body(ResponseWrapper.success(result));
   }
@@ -89,7 +88,7 @@ public class AdminCategoryL2Controller {
   @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content(schema = @Schema(implementation = CustomErrorResponseDTO.class)))
   public ResponseEntity<ResponseWrapper<AdminCategoryL2ResponseDTO>> getCategoryL2(
       @PathVariable("id") @NotBlank(message = "id는 필수항목입니다.") @UUID(message = "id는 UUID 형식이어야 합니다.") String id) {
-    AdminCategoryL2ResponseDTO result = adminCategoryL2Facade.getCategoryL2ById(id);
+    AdminCategoryL2ResponseDTO result = adminCategoryL2AppService.getCategoryL2ById(id);
     return ResponseEntity.ok(ResponseWrapper.success(result));
   }
 
@@ -101,7 +100,7 @@ public class AdminCategoryL2Controller {
   public ResponseEntity<ResponseWrapper<AdminCategoryL2ResponseDTO>> putCategoryL2(
       @PathVariable("id") @NotBlank(message = "id는 필수항목입니다.") @UUID(message = "id는 UUID 형식이어야 합니다.") String id,
       @RequestBody @Valid AdminCategoryL2PutRequestDTO requestDTO) {
-    AdminCategoryL2ResponseDTO result = adminCategoryL2Facade.putCategoryL2(id, requestDTO);
+    AdminCategoryL2ResponseDTO result = adminCategoryL2AppService.putCategoryL2(id, requestDTO);
     return ResponseEntity.ok(ResponseWrapper.success(result));
   }
 
@@ -113,7 +112,7 @@ public class AdminCategoryL2Controller {
   public ResponseEntity<ResponseWrapper<AdminCategoryL2ResponseDTO>> patchCategoryL2(
       @PathVariable("id") @NotBlank(message = "id는 필수항목입니다.") @UUID(message = "id는 UUID 형식이어야 합니다.") String id,
       @RequestBody @Valid AdminCategoryL2PatchRequestDTO requestDTO) {
-    AdminCategoryL2ResponseDTO result = adminCategoryL2Facade.patchCategoryL2(id, requestDTO);
+    AdminCategoryL2ResponseDTO result = adminCategoryL2AppService.patchCategoryL2(id, requestDTO);
     return ResponseEntity.ok(ResponseWrapper.success(result));
   }
 
@@ -124,7 +123,7 @@ public class AdminCategoryL2Controller {
   @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content(schema = @Schema(implementation = CustomErrorResponseDTO.class)))
   public ResponseEntity<ResponseWrapper<AdminCategoryL2ResponseDTO>> deleteCategoryL2(
       @PathVariable("id") @NotBlank(message = "id는 필수항목입니다.") @UUID(message = "id는 UUID 형식이어야 합니다.") String id) {
-    AdminCategoryL2ResponseDTO result = adminCategoryL2Facade.deleteCategoryL2(id);
+    AdminCategoryL2ResponseDTO result = adminCategoryL2AppService.deleteCategoryL2(id);
     return ResponseEntity.ok(ResponseWrapper.success(result));
   }
 }

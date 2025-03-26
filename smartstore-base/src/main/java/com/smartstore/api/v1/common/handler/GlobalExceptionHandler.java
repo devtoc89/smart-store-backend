@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindException;
@@ -13,8 +14,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
-import com.smartstore.api.v1.common.domain.dto.CustomErrorResponseDTO;
-import com.smartstore.api.v1.common.utils.ExceptionUtils;
+import com.smartstore.api.v1.common.dto.CustomErrorResponseDTO;
+import com.smartstore.api.v1.common.exception.BaseException;
+import com.smartstore.api.v1.common.utils.exception.ExceptionUtil;
 
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
@@ -56,7 +58,7 @@ public class GlobalExceptionHandler {
       errors = methodEx.getBindingResult()
           .getFieldErrors()
           .stream()
-          .map(ExceptionUtils::formatFieldError)
+          .map(ExceptionUtil::formatFieldError)
           .toList();
 
     } else if (ex instanceof BindException bindEx) {
@@ -64,14 +66,14 @@ public class GlobalExceptionHandler {
       errors = bindEx.getBindingResult()
           .getFieldErrors()
           .stream()
-          .map(ExceptionUtils::formatFieldError)
+          .map(ExceptionUtil::formatFieldError)
           .toList();
 
     } else if (ex instanceof ConstraintViolationException constraintEx) {
       // `@Validated`가 붙은 PathVariable, RequestParam 검증 실패 시 발생
       errors = constraintEx.getConstraintViolations()
           .stream()
-          .map(ExceptionUtils::formatConstraintViolation)
+          .map(ExceptionUtil::formatConstraintViolation)
           .toList();
     }
 
@@ -82,6 +84,27 @@ public class GlobalExceptionHandler {
         LocalDateTime.now());
 
     return ResponseEntity.badRequest().body(errorResponse);
+  }
+
+  @ExceptionHandler({ BaseException.class })
+  public ResponseEntity<CustomErrorResponseDTO> handleBaseException(BaseException ex) {
+    CustomErrorResponseDTO errorResponse = new CustomErrorResponseDTO(
+        ex.getStatus().value(),
+        ex.getMessage(),
+        List.of(), // 세부 에러 없음
+        LocalDateTime.now());
+    return ResponseEntity.status(ex.getStatus()).body(errorResponse);
+  }
+
+  @ExceptionHandler(DataIntegrityViolationException.class)
+  public ResponseEntity<CustomErrorResponseDTO> handleDataIntegrityViolationException(BaseException ex) {
+    // 절대로 db 문제가 밖으로 표시되면 안됨. sentry등 모니터링 툴로만 표시.
+    CustomErrorResponseDTO errorResponse = new CustomErrorResponseDTO(
+        ex.getStatus().value(),
+        "시스템에 에러가 발생하였습니다.",
+        List.of(), // 세부 에러 없음
+        LocalDateTime.now());
+    return ResponseEntity.status(ex.getStatus()).body(errorResponse);
   }
 
   @ExceptionHandler(Exception.class)

@@ -3,13 +3,16 @@ package com.smartstore.api.v1.common.domain.query;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
+
 import org.springframework.data.jpa.domain.Specification;
+
+import com.smartstore.api.v1.common.constants.message.CommonMessage;
 import com.smartstore.api.v1.common.domain.entity.BaseEntity;
 
 public class BaseSpecification {
 
   private BaseSpecification() {
-    throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
+    throw new UnsupportedOperationException(CommonMessage.CANNOT_INITIALIZE_UTIL_CLASS_MSG);
   }
 
   public static <T extends BaseEntity> Specification<T> inId(List<UUID> ids) {

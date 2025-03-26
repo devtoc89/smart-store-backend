@@ -3,7 +3,7 @@ package com.smartstore.api.v1.application.admin.product.dto;
 import org.hibernate.validator.constraints.UUID;
 
 import com.smartstore.api.v1.common.dto.AdminFilterRequestBaseDTO;
-import com.smartstore.api.v1.common.utils.StringUtils;
+import com.smartstore.api.v1.common.utils.string.StringUtil;
 import com.smartstore.api.v1.domain.product.vo.ProductFilterConditionVO;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -35,7 +35,7 @@ public class AdminProductFilterRequestDTO extends AdminFilterRequestBaseDTO {
   public ProductFilterConditionVO toSearchConditionVO() {
     return ProductFilterConditionVO.builder()
         .base(toBaseFilterConditionVO())
-        .categoryId(StringUtils.stringToUUID(categoryId))
+        .categoryId(StringUtil.stringToUUID(categoryId))
         .name(keyword)
         .build();
   }

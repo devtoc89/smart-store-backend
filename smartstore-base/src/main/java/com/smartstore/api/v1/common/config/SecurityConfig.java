@@ -8,13 +8,22 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import jakarta.annotation.PostConstruct;
+import com.smartstore.api.v1.application.admin.admin.AdminPublicMeta;
+import com.smartstore.api.v1.common.constants.enums.Role;
+import com.smartstore.api.v1.common.filter.AdminJwtAuthenticationFilter;
 
+import jakarta.annotation.PostConstruct;
+import lombok.extern.log4j.Log4j2;
+
+@Log4j2
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -31,23 +40,35 @@ public class SecurityConfig {
   }
 
   @Bean
-  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+  public PasswordEncoder passwordEncoder() {
+    return new BCryptPasswordEncoder();
+  }
+
+  @Bean
+  public SecurityFilterChain securityFilterChain(HttpSecurity http, AdminJwtAuthenticationFilter adminJwtFilter)
+      throws Exception {
     http
+        // .cors(cors -> cors.configurationSource(corsConfigurationSource())) // CORS 적용
         .cors(cors -> cors.configurationSource(corsConfigurationSource())) // CORS 적용
-        .csrf(csrf -> csrf.disable()) // CSRF 비활성화
+        .csrf(csrf -> csrf.disable())
+        .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
+    http
+        .securityMatcher("/**")
         .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/public/**").permitAll() // 인증 필요 없는 엔드포인트
             .requestMatchers("/actuator/**").permitAll()
-            .requestMatchers("/v1/api/**").permitAll() // API 요청은 인증 필요
-            // 기타 요청 허용 (필요에 따라 수정 / TODO: JWT 추가 후 인증 수행)
-            .anyRequest().permitAll())
-        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)); // 세션 사용 안 함
+            .requestMatchers("/swagger/**").permitAll()
+            .requestMatchers(AdminPublicMeta.SIGNUP_FULL_PATH, AdminPublicMeta.LOGIN_FULL_PATH).permitAll()
+            .anyRequest().hasRole(Role.ADMIN.name()))
+        .addFilterBefore(adminJwtFilter, UsernamePasswordAuthenticationFilter.class);
 
     return http.build();
   }
 
   @Bean
   public CorsConfigurationSource corsConfigurationSource() {
+    log.info("allowed orgins:{}", allowedOrigins);
+
     CorsConfiguration config = new CorsConfiguration();
     config.setAllowedOriginPatterns(allowedOrigins); // 허용할 Origin
     config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
@@ -59,4 +80,5 @@ public class SecurityConfig {
     source.registerCorsConfiguration("/**", config);
     return source;
   }
+
 }

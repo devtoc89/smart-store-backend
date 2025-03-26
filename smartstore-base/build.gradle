@@ -1,6 +1,6 @@
 plugins {
 	id 'java'
-	id 'org.springframework.boot' version '3.4.3'
+	id 'org.springframework.boot' version '3.4.4'
 	id 'io.spring.dependency-management' version '1.1.7'
 }
 
@@ -29,34 +29,42 @@ ext {
 
 dependencies {
 
-  // impl: spring
+  // spring
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
   implementation 'org.springframework.boot:spring-boot-starter-actuator'
-  
-  // impl
   implementation 'org.springframework.modulith:spring-modulith-starter-core'
 	implementation 'org.springframework.modulith:spring-modulith-starter-jpa'
 	
-  // impl: cache
+  // cache
   implementation 'org.springframework.boot:spring-boot-starter-cache'
   implementation 'com.github.ben-manes.caffeine:caffeine:3.2.0'
-  
-  // swagger
-  implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.5'
+
+  // aws
+  implementation platform('software.amazon.awssdk:bom:2.27.21')
+  implementation 'software.amazon.awssdk:s3'
+  implementation 'software.amazon.awssdk:auth'
+
+  //jwt
+  implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+  runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
+  runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5' // ← JSON 직렬화용
+
+  // db
+  runtimeOnly 'org.postgresql:postgresql'
   
   // devtool
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	developmentOnly 'org.springframework.boot:spring-boot-docker-compose'
+ 
+  // swagger
+  implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.5'
 	
   // lombok
   compileOnly 'org.projectlombok:lombok'
-  
 
-  // db
-  runtimeOnly 'org.postgresql:postgresql'
 	
   // annotation
   annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
@@ -66,7 +74,11 @@ dependencies {
   testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.modulith:spring-modulith-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
+  testImplementation 'net.bytebuddy:byte-buddy-agent:1.15.5'
+  testImplementation 'org.mockito:mockito-core:5.14.2'
+
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
 }
 
 dependencyManagement {
@@ -77,4 +89,37 @@ dependencyManagement {
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+test {
+    doFirst {
+        def byteBuddyAgentJar = configurations.testRuntimeClasspath.find { 
+            it.name.startsWith('byte-buddy-agent') && it.name.endsWith('.jar')
+        }
+        def mockitoCoreJar = configurations.testRuntimeClasspath.find { 
+            it.name.startsWith('mockito-core') && it.name.endsWith('.jar')
+        }
+        println "Byte Buddy Agent jar: " + (byteBuddyAgentJar ? byteBuddyAgentJar.absolutePath : "Not found")
+        println "Mockito Core jar: " + (mockitoCoreJar ? mockitoCoreJar.absolutePath : "Not found")
+    }
+
+    jvmArgs '-Xshare:off'
+
+    def byteBuddyAgentJar = configurations.testRuntimeClasspath.find { 
+        it.name.startsWith('byte-buddy-agent') && it.name.endsWith('.jar')
+    }
+    if (byteBuddyAgentJar != null) {
+        jvmArgs "-javaagent:${byteBuddyAgentJar.absolutePath}"
+    } else {
+        logger.warn("Byte Buddy Agent jar not found in testRuntimeClasspath!")
+    }
+
+    def mockitoCoreJar = configurations.testRuntimeClasspath.find { 
+        it.name.startsWith('mockito-core') && it.name.endsWith('.jar')
+    }
+    if (mockitoCoreJar != null) {
+        jvmArgs "-javaagent:${mockitoCoreJar.absolutePath}"
+    } else {
+        logger.warn("Mockito Core jar not found in testRuntimeClasspath!")
+    }
 }

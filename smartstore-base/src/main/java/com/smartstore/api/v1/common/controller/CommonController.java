@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.smartstore.api.v1.common.constants.message.CommonMessage;
 import com.smartstore.api.v1.common.dto.ResponseWrapper;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -17,7 +18,7 @@ class Config {
   protected static final String BASE_URL = "/";
 
   private Config() {
-    throw new UnsupportedOperationException("This is a constants class and cannot be instantiated");
+    throw new UnsupportedOperationException(CommonMessage.CANNOT_INITIALIZE_CONSTANTS_CLASS_MSG);
   }
 }
 

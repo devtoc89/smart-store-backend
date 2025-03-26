@@ -14,57 +14,53 @@ import com.smartstore.api.v1.application.admin.categoryl2.dto.AdminCategoryL2Put
 import com.smartstore.api.v1.application.admin.categoryl2.dto.AdminCategoryL2ResponseDTO;
 import com.smartstore.api.v1.domain.category.service.CategoryL2Service;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class AdminCategoryL2AppService {
 
   private final CategoryL2Service categoryL2Service;
 
-  public AdminCategoryL2AppService(CategoryL2Service categoryL2Service) {
-    this.categoryL2Service = categoryL2Service;
-  }
-
   @Transactional(readOnly = true)
   public AdminCategoryL2ResponseDTO getCategoryL2ById(String id) {
     return AdminCategoryL2ResponseDTO.fromVO(
-        categoryL2Service.findCategoryL2ById(UUID.fromString(id)));
+        categoryL2Service.findById(UUID.fromString(id)));
   }
 
   @Transactional(readOnly = true)
   public Page<AdminCategoryL2ResponseDTO> getCategoryL2sByFilterWithPaging(
       AdminCategoryL2FilterRequestDTO searchRequest, Pageable pageable) {
     return AdminCategoryL2ResponseDTO.fromVOWithPage(
-        categoryL2Service.findCategoryL2sByCondition(
+        categoryL2Service.findManyByCondition(
             searchRequest.toSearchConditionVO(), pageable));
   }
 
   @Transactional
   public AdminCategoryL2ResponseDTO postCategoryL2(
       AdminCategoryL2PostRequestDTO postRequestDTO) {
-    return AdminCategoryL2ResponseDTO.fromVO(
-        categoryL2Service.createCategoryL2(
-            postRequestDTO.toVO()));
+    var id = UUID.randomUUID();
+    return AdminCategoryL2ResponseDTO.fromVO(categoryL2Service.create(id, postRequestDTO.toVO()));
   }
 
   @Transactional
   public AdminCategoryL2ResponseDTO putCategoryL2(String id,
       AdminCategoryL2PutRequestDTO putRequestDTO) {
-    return AdminCategoryL2ResponseDTO.fromVO(
-        categoryL2Service.replaceCategoryL2(
-            UUID.fromString(id), putRequestDTO.toVO()));
+    return AdminCategoryL2ResponseDTO.fromVO(categoryL2Service.replace(UUID.fromString(id), putRequestDTO.toVO()));
   }
 
   @Transactional
   public AdminCategoryL2ResponseDTO patchCategoryL2(String id,
       AdminCategoryL2PatchRequestDTO putRequestDTO) {
     return AdminCategoryL2ResponseDTO.fromVO(
-        categoryL2Service.modifyCategoryL2(
+        categoryL2Service.modify(
             UUID.fromString(id), putRequestDTO.toVO()));
   }
 
   @Transactional
   public AdminCategoryL2ResponseDTO deleteCategoryL2(String id) {
     return AdminCategoryL2ResponseDTO.fromVO(
-        categoryL2Service.deleteCategoryL2(
+        categoryL2Service.delete(
             UUID.fromString(id)));
   }
 }
