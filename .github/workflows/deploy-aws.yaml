@@ -82,14 +82,6 @@ jobs:
         with:
           task-definition: rendered-task-def.json
           cluster: ${{ secrets.ECS_CLUSTER_NAME }} \
-          service: ${{ secrets.ECS_SERVICE_NAME }}-service
+          service: ${{ secrets.ECS_SERVICE_NAME }}
           wait-for-service-stability: true
 
-
-      # # 8. ECS 서비스 업데이트
-      # - name: Deploy to Amazon ECS
-      #   run: |
-      #     aws ecs update-service \
-      #       --cluster ${{ secrets.ECS_CLUSTER_NAME }} \
-      #       --service ${{ secrets.ECS_SERVICE_NAME_PREFIX }}-${{ env.SERVICE }}-service \
-      #       --force-new-deployment
