@@ -77,16 +77,19 @@ jobs:
               -e "s|__APP_CORS__|${{ secrets.APP_CORS }}|g" \
               .github/ecs-task-definition.json.template > rendered-task-def.json
 
-      - name: Register ECS Task Definition
-        uses: aws-actions/amazon-ecs-register-task-definition@v1
+      - name: Deploy to Amazon ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         with:
           task-definition: rendered-task-def.json
+          cluster: ${{ secrets.ECS_CLUSTER_NAME }} \
+          service: ${{ secrets.ECS_SERVICE_NAME_PREFIX }}-${{ env.SERVICE }}-service
+          wait-for-service-stability: true
 
 
-      # 8. ECS 서비스 업데이트
-      - name: Deploy to Amazon ECS
-        run: |
-          aws ecs update-service \
-            --cluster ${{ secrets.ECS_CLUSTER_NAME }} \
-            --service ${{ secrets.ECS_SERVICE_NAME_PREFIX }}-${{ env.SERVICE }}-service \
-            --force-new-deployment
+      # # 8. ECS 서비스 업데이트
+      # - name: Deploy to Amazon ECS
+      #   run: |
+      #     aws ecs update-service \
+      #       --cluster ${{ secrets.ECS_CLUSTER_NAME }} \
+      #       --service ${{ secrets.ECS_SERVICE_NAME_PREFIX }}-${{ env.SERVICE }}-service \
+      #       --force-new-deployment
