@@ -56,8 +56,7 @@ jobs:
               -e "s|__DB_URL__|${{ secrets.DB_URL }}|g" \
               -e "s|__DB_USER__|${{ secrets.DB_USER }}|g" \
               -e "s|__DB_PASS__|${{ secrets.DB_PASS }}|g" \
-              -e "s|__AWS_ACCESS_KEY__|${{ secrets.AWS_ACCESS_KEY }}|g" \
-              -e "s|__AWS_SECRET_KEY__|${{ secrets.AWS_SECRET_KEY }}|g" \
+              -e "s|__TASK_ROLE_ARN__|${{ secrets.TASK_ROLE_ARN }}|g" \
               -e "s|__AWS_REGION__|${{ secrets.AWS_REGION }}|g" \
               -e "s|__S3_BUCKET__|${{ secrets.S3_BUCKET }}|g" \
               -e "s|__CLOUDFRONT_URL__|${{ secrets.CLOUDFRONT_URL }}|g" \

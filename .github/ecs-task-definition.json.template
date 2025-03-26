@@ -1,5 +1,6 @@
 {
   "family": "smart-store-task",
+  "taskRoleArn": "__TASK_ROLE_ARN__",
   "networkMode": "awsvpc",
   "containerDefinitions": [
     {
@@ -42,14 +43,6 @@
           "value": "__AWS_REGION__"
         },
         {
-          "name": "AWS_ACCESS_KEY",
-          "value": "__AWS_ACCESS_KEY__"
-        },
-        {
-          "name": "AWS_SECRET_KEY",
-          "value": "__AWS_SECRET_KEY__"
-        },
-        {
           "name": "S3_BUCKET",
           "value": "__S3_BUCKET__"
         },
@@ -71,6 +64,6 @@
   "requiresCompatibilities": [
     "EC2"
   ],
-  "cpu": "256",
+  "cpu": "512",
   "memory": "512"
 }
