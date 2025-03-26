@@ -16,26 +16,13 @@ jobs:
           java-version: 21
   deploy:
     runs-on: ubuntu-latest
+    environment: dev/deploy
 
     steps:
       # 1. 코드 체크아웃
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 3. 서비스 식별
-      # - name: Identify service
-      #   id: service
-      #   run: |
-      #     if [[ "${{ github.ref_name }}" == "dev/deploy" ]]; then
-      #       echo "SERVICE=dev" >> $GITHUB_ENV
-      #     elif [[ "${{ github.ref_name }}" == "prd/deploy" ]]; then
-      #       echo "SERVICE=prd" >> $GITHUB_ENV
-      #     else
-      #       echo "Unknown branch. Exiting."
-      #       exit 1
-      #     fi
-      #   shell: bash
-        
       # 3. AWS CLI 설정
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
