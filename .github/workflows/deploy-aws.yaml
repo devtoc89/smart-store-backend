@@ -6,14 +6,6 @@ on:
       - dev/deploy
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Set up Java
-        uses: actions/setup-java@v3
-        with:
-          distribution: temurin
-          java-version: 21
   deploy:
     runs-on: ubuntu-latest
     environment: dev/deploy
@@ -22,6 +14,13 @@ jobs:
       # 1. 코드 체크아웃
       - name: Checkout code
         uses: actions/checkout@v4
+
+      # 2. Java 설치
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: 21
 
       # 3. AWS CLI 설정
       - name: Configure AWS Credentials
@@ -35,23 +34,26 @@ jobs:
       - name: Login to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v2
 
+      # 5. Docker Buildx 설정
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-        
+
       # 6. Docker 빌드 및 푸시
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
-          context: .
+          context: ./smartstore-base
           push: true
           tags: ${{ secrets.ECR_REPOSITORY_URI }}:latest
-          cache-from: type=gha # 여기서 gha 는 Guthub Actions 용 캐시를 의미합니다.
+          cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      # 7. Task 정의 템플릿을 실제 값으로 치환
       - name: Render ECS Task Definition with sed
         run: |
           sed -e "s|__IMAGE_URI__|${{ secrets.ECR_REPOSITORY_URI }}:latest|g" \
               -e "s|__SPRING_PROFILES_ACTIVE__|${{ secrets.SPRING_PROFILES_ACTIVE }}|g" \
+              -e "s|__DB_URL__|${{ secrets.DB_URL }}|g" \
               -e "s|__DB_USER__|${{ secrets.DB_USER }}|g" \
               -e "s|__DB_PASS__|${{ secrets.DB_PASS }}|g" \
               -e "s|__AWS_ACCESS_KEY__|${{ secrets.AWS_ACCESS_KEY }}|g" \
@@ -63,6 +65,7 @@ jobs:
               -e "s|__APP_CORS__|${{ secrets.APP_CORS }}|g" \
               .github/ecs-task-definition.json.template > rendered-task-def.json
 
+      # 8. ECS에 배포
       - name: Deploy to Amazon ECS
         uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         with:
@@ -70,4 +73,3 @@ jobs:
           cluster: ${{ secrets.ECS_CLUSTER_NAME }}
           service: ${{ secrets.ECS_SERVICE_NAME }}
           wait-for-service-stability: true
-
