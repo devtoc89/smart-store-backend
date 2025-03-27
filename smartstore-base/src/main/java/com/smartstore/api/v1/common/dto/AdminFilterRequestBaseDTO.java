@@ -10,7 +10,6 @@ import com.smartstore.api.v1.common.utils.string.StringUtil;
 import com.smartstore.api.v1.common.validation.date.ValidDateTime;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.persistence.MappedSuperclass;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -19,7 +18,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
-@MappedSuperclass
 @Getter
 @Setter
 @NoArgsConstructor

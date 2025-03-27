@@ -36,7 +36,7 @@ public class AdminProductAppService {
 
   private void validateCategory(String categoryId) throws BindException {
     if (ObjectUtils.isEmpty(categoryId) || !categoryNodeService.isExist(StringUtil.stringToUUID(categoryId))) {
-      throw ValidationUtil.createBindException(this, "categoryId", "카테고리(말단)의 ID가 유효하지 않습니다.");
+      throw ValidationUtil.createBindException(this, "categoryId", "말단 카테고리의 ID가 유효하지 않습니다.");
     }
   }
 

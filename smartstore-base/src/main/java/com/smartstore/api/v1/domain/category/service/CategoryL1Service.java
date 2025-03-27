@@ -23,16 +23,20 @@ public class CategoryL1Service {
 
   private final CategoryL1Repository categoryL1Repository;
 
-  private CategoryL1 applyUpdate(CategoryL1 categoryL1, CategoryL1VO vo) {
-    categoryL1.setName(vo.getName());
-    return categoryL1;
+  private CategoryL1 applyUpdate(CategoryL1 entity, CategoryL1VO vo) {
+    entity.setName(vo.getName());
+    entity.setOrderBy(vo.getOrderBy());
+    return entity;
   }
 
-  private CategoryL1 applyPartialUpdate(CategoryL1 categoryL1, CategoryL1VO vo) {
+  private CategoryL1 applyPartialUpdate(CategoryL1 entity, CategoryL1VO vo) {
     if (!ObjectUtils.isEmpty(vo.getName())) {
-      categoryL1.setName(vo.getName());
+      entity.setName(vo.getName());
     }
-    return categoryL1;
+    if (!ObjectUtils.isEmpty(vo.getOrderBy())) {
+      entity.setOrderBy(vo.getOrderBy());
+    }
+    return entity;
   }
 
   private CategoryL1 findByIdOrExcept(UUID id) {
@@ -55,33 +59,33 @@ public class CategoryL1Service {
   }
 
   @Transactional(propagation = Propagation.REQUIRED)
-  public CategoryL1VO create(UUID id, CategoryL1VO categoryL1VO) {
+  public CategoryL1VO create(UUID id, CategoryL1VO vo) {
     var entity = CategoryL1.builder()
         .id(id)
-        .name(categoryL1VO.getName())
+        .name(vo.getName())
         .build();
 
     return CategoryL1VO.fromEntity(categoryL1Repository.save(entity));
   }
 
   @Transactional(propagation = Propagation.REQUIRED)
-  public CategoryL1VO replace(UUID id, CategoryL1VO categoryL1VO) {
-    var entity = applyUpdate(findByIdOrExcept(id), categoryL1VO);
+  public CategoryL1VO replace(UUID id, CategoryL1VO vo) {
+    var entity = applyUpdate(findByIdOrExcept(id), vo);
     return CategoryL1VO.fromEntity(
         categoryL1Repository.save(entity));
   }
 
   @Transactional(propagation = Propagation.REQUIRED)
-  public CategoryL1VO modify(UUID id, CategoryL1VO categoryL1VO) {
-    var entity = applyPartialUpdate(findByIdOrExcept(id), categoryL1VO);
+  public CategoryL1VO modify(UUID id, CategoryL1VO vo) {
+    var entity = applyPartialUpdate(findByIdOrExcept(id), vo);
     return CategoryL1VO.fromEntity(categoryL1Repository.save(entity));
   }
 
   @Transactional(propagation = Propagation.REQUIRED)
   public CategoryL1VO delete(UUID id) {
-    CategoryL1 categoryL1 = findByIdOrExcept(id);
-    categoryL1.markDelete();
+    CategoryL1 entity = findByIdOrExcept(id);
+    entity.markDelete();
 
-    return CategoryL1VO.fromEntity(categoryL1Repository.save(categoryL1));
+    return CategoryL1VO.fromEntity(categoryL1Repository.save(entity));
   }
 }

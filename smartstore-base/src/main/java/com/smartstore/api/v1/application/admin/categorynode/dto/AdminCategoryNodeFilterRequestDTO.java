@@ -21,7 +21,7 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @SuperBuilder
 @EqualsAndHashCode(callSuper = true)
-@Schema(description = "카테고리(말단) 조건 조회 DTO")
+@Schema(description = "말단 카테고리 조건 조회 DTO")
 public class AdminCategoryNodeFilterRequestDTO extends AdminFilterRequestBaseDTO {
 
   @Schema(description = "검색어 (2글자 이상 입력)", example = "전자제품")
@@ -29,7 +29,7 @@ public class AdminCategoryNodeFilterRequestDTO extends AdminFilterRequestBaseDTO
   private String keyword;
 
   @UUID
-  @Schema(description = "카테고리(중) ID", example = "\"550e8400-e29b-41d4-a716-446655440000\"")
+  @Schema(description = "2차 카테고리 ID", example = "\"550e8400-e29b-41d4-a716-446655440000\"")
   private String categoryL2Id;
 
   public CategoryNodeFilterConditionVO toSearchConditionVO() {

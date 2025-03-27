@@ -29,24 +29,28 @@ public class CategoryL2Service {
 
   private final CategoryL2Repository categoryL2Repository;
 
-  private CategoryL2 applyUpdate(CategoryL2 categoryL2, CategoryL2VO vo) {
-    categoryL2.setName(vo.getName());
-    categoryL2.setCategoryL1(entityManager.getReference(CategoryL1.class, vo.getCategoryL1Id()));
-    return categoryL2;
+  private CategoryL2 applyUpdate(CategoryL2 entity, CategoryL2VO vo) {
+    entity.setName(vo.getName());
+    entity.setOrderBy(vo.getOrderBy());
+    entity.setCategoryL1(entityManager.getReference(CategoryL1.class, vo.getCategoryL1Id()));
+    return entity;
   }
 
-  private CategoryL2 applyPartialUpdate(CategoryL2 categoryL2, CategoryL2VO vo) {
+  private CategoryL2 applyPartialUpdate(CategoryL2 entity, CategoryL2VO vo) {
     if (!ObjectUtils.isEmpty(vo.getName())) {
-      categoryL2.setName(vo.getName());
+      entity.setName(vo.getName());
+    }
+    if (!ObjectUtils.isEmpty(vo.getOrderBy())) {
+      entity.setOrderBy(vo.getOrderBy());
     }
     if (!ObjectUtils.isEmpty(vo.getCategoryL1Id())) {
-      categoryL2.setCategoryL1(entityManager.getReference(CategoryL1.class, vo.getCategoryL1Id()));
+      entity.setCategoryL1(entityManager.getReference(CategoryL1.class, vo.getCategoryL1Id()));
     }
-    return categoryL2;
+    return entity;
   }
 
   private CategoryL2 findByIdOrExcept(UUID id) {
-    return categoryL2Repository.findById(id).orElseThrow(() -> new NoSuchElementException("해당하는 카테고리(중)가 존재하지 않습니다."));
+    return categoryL2Repository.findById(id).orElseThrow(() -> new NoSuchElementException("해당하는 2차 카테고리가 존재하지 않습니다."));
   }
 
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
@@ -89,9 +93,9 @@ public class CategoryL2Service {
 
   @Transactional(propagation = Propagation.REQUIRED)
   public CategoryL2VO delete(UUID id) {
-    CategoryL2 categoryL2 = findByIdOrExcept(id);
-    categoryL2.markDelete();
+    CategoryL2 entity = findByIdOrExcept(id);
+    entity.markDelete();
 
-    return CategoryL2VO.fromEntity(categoryL2Repository.save(categoryL2));
+    return CategoryL2VO.fromEntity(categoryL2Repository.save(entity));
   }
 }

@@ -6,11 +6,14 @@ import com.smartstore.api.v1.domain.category.vo.CategoryL2VO;
 public interface AdminCategoryL2UpsertRequestDTOIF {
   String getName();
 
+  Integer getOrderBy();
+
   String getCategoryL1Id();
 
   default CategoryL2VO toVO() {
     return CategoryL2VO.builder()
         .name(getName())
+        .orderBy(getOrderBy())
         .categoryL1Id(StringUtil.stringToUUID(getCategoryL1Id()))
         .build();
   }

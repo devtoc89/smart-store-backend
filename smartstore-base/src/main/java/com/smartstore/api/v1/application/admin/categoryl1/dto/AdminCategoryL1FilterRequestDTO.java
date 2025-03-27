@@ -18,7 +18,7 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @SuperBuilder
 @EqualsAndHashCode(callSuper = true)
-@Schema(description = "카테고리(소) 조건 조회 DTO")
+@Schema(description = "1차 카테고리 조건 조회 DTO")
 public class AdminCategoryL1FilterRequestDTO extends AdminFilterRequestBaseDTO {
 
   @Schema(description = "검색어 (2글자 이상 입력)", example = "전자제품")
