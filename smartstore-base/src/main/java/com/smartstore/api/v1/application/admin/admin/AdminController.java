@@ -2,7 +2,6 @@ package com.smartstore.api.v1.application.admin.admin;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,7 +18,6 @@ import com.smartstore.api.v1.common.constants.message.CommonMessage;
 import com.smartstore.api.v1.common.constants.url.AdminBaseURLConstants;
 import com.smartstore.api.v1.common.dto.ResponseWrapper;
 
-import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -63,10 +61,10 @@ public class AdminController {
     return ResponseEntity.ok(ResponseWrapper.success(adminService.refreshAccessToken(body.getRefreshToken())));
   }
 
-  @DeleteMapping("/logout")
-  @Operation(hidden = true) // Swagger 문서 제외
+  @PostMapping("/logout")
+  // @Operation(hidden = true) // Swagger 문서 제외
   public ResponseEntity<ResponseWrapper<String>> logout(@AuthenticationPrincipal AdminDetails admin) {
-    adminService.logout(admin.getAdmin().getId());
+    adminService.logout(admin.getAdminContext().getId());
     return ResponseEntity.ok(ResponseWrapper.success("로그아웃 되었습니다."));
   }
 }

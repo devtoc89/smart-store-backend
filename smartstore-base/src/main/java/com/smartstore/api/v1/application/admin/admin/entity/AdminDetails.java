@@ -7,41 +7,43 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import com.smartstore.api.v1.application.admin.admin.vo.AdminUserContext;
+
 public class AdminDetails implements UserDetails {
 
-  private final Admin admin;
+  private final transient AdminUserContext adminContext;
 
-  public AdminDetails(Admin admin) {
-    this.admin = admin;
+  public AdminDetails(AdminUserContext adminContext) {
+    this.adminContext = adminContext;
   }
 
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
     Collection<GrantedAuthority> authorities = new ArrayList<>();
-    authorities.add(new SimpleGrantedAuthority("ROLE_" + admin.getRole().name())); // 예: ROLE_ADMIN
+    authorities.add(new SimpleGrantedAuthority("ROLE_" + adminContext.getRole().name())); // 예: ROLE_ADMIN
     return authorities;
   }
 
   @Override
   public String getPassword() {
-    return admin.getPassword();
+    return adminContext.getPassword();
   }
 
   @Override
   public String getUsername() {
-    return admin.getEmail(); // email을 username으로 사용
+    return adminContext.getEmail(); // email을 username으로 사용
   }
 
   @Override
   public boolean isAccountNonExpired() {
     // TODO: 개정 활성화 프로세스
     return true;
-    // return admin.getIsActivated(); // isActivated가 true일 때만 계정 유효
+    // return adminContextHoler.getIsActivated(); // isActivated가 true일 때만 계정 유효
   }
 
   @Override
   public boolean isAccountNonLocked() {
-    return admin.getLoginFailCount() < 5; // 로그인 실패 횟수가 5 이상이면 계정 잠금
+    return adminContext.getLoginFailCount() < 5; // 로그인 실패 횟수가 5 이상이면 계정 잠금
   }
 
   @Override
@@ -51,10 +53,10 @@ public class AdminDetails implements UserDetails {
 
   @Override
   public boolean isEnabled() {
-    return admin.getIsActivated(); // 계정이 활성화되어 있으면 true
+    return adminContext.getIsActivated(); // 계정이 활성화되어 있으면 true
   }
 
-  public Admin getAdmin() {
-    return admin; // 원본 Admin 객체를 반환
+  public AdminUserContext getAdminContext() {
+    return adminContext; // 원본 Admin 객체를 반환
   }
 }

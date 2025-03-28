@@ -9,7 +9,7 @@ import javax.crypto.SecretKey;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import com.smartstore.api.v1.application.admin.admin.entity.Admin;
+import com.smartstore.api.v1.common.constants.enums.Role;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
@@ -35,21 +35,20 @@ public class AdminJwtProvider {
     key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
   }
 
-  public String generateToken(Admin admin) {
+  public String generateToken(String subject, Role role) {
     return Jwts.builder()
-        .setSubject(admin.getId().toString())
-        .claim("role", admin.getRole().name())
-        // .claim("email", admin.getEmail())
+        .setSubject(subject)
+        .claim("role", role.name())
         .setIssuedAt(new Date())
         .setExpiration(new Date(System.currentTimeMillis() + accessTokenValidity))
         .signWith(key, SignatureAlgorithm.HS256)
         .compact();
   }
 
-  public String generateRefreshToken(Admin admin) {
+  public String generateRefreshToken(String subject) {
 
     return Jwts.builder()
-        .setSubject(admin.getId().toString())
+        .setSubject(subject)
         .claim("type", "refresh")
         .setIssuedAt(new Date())
         .setExpiration(new Date(System.currentTimeMillis() + refreshTokenValidity))

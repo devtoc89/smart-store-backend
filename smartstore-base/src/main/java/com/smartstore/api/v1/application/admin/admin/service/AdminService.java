@@ -21,6 +21,7 @@ import com.smartstore.api.v1.application.admin.admin.entity.AdminToken;
 import com.smartstore.api.v1.application.admin.admin.provider.AdminJwtProvider;
 import com.smartstore.api.v1.application.admin.admin.repository.AdminRepository;
 import com.smartstore.api.v1.application.admin.admin.repository.AdminTokenRepository;
+import com.smartstore.api.v1.application.admin.admin.vo.AdminUserContext;
 import com.smartstore.api.v1.common.constants.enums.Role;
 import com.smartstore.api.v1.common.exception.BadRequestException;
 import com.smartstore.api.v1.common.exception.UnauthorizedException;
@@ -56,7 +57,7 @@ public class AdminService implements UserDetailsService {
   @Transactional
   public AdminLoginResponseDTO login(AdminLoginRequestDTO request) {
     Admin admin = adminRepository.findByEmail(request.getEmail())
-        .orElseThrow(() -> new UnauthorizedException("존재하지 않는 계정입니다."));
+        .orElseThrow(() -> new UnauthorizedException("로그인 정보가 일치하지 않습니다."));
 
     // TODO: super admin 생성, 관리자 계정 승인 프로세스
     // if (!admin.getIsActivated().equals(true)) {
@@ -66,7 +67,7 @@ public class AdminService implements UserDetailsService {
     if (!passwordEncoder.matches(request.getPassword(), admin.getPassword())) {
       admin.setLoginFailCount(admin.getLoginFailCount() + 1);
       adminRepository.save(admin);
-      throw new UnauthorizedException("비밀번호가 일치하지 않습니다.");
+      throw new UnauthorizedException("로그인 정보가 일치하지 않습니다.");
     }
 
     admin.setLoginFailCount(0);
@@ -76,8 +77,8 @@ public class AdminService implements UserDetailsService {
     adminRepository.save(admin);
 
     // ✅ Access / Refresh Token 발급
-    String accessToken = jwtProvider.generateToken(admin);
-    String refreshToken = jwtProvider.generateRefreshToken(admin);
+    String accessToken = jwtProvider.generateToken(admin.getEmail(), admin.getRole());
+    String refreshToken = jwtProvider.generateRefreshToken(admin.getEmail());
     ZonedDateTime refreshExpiresAt = ZonedDateTime.now().plusDays(7);
 
     // ✅ RefreshToken 저장
@@ -102,7 +103,7 @@ public class AdminService implements UserDetailsService {
     }
 
     UUID adminId = jwtProvider.getUserId(refreshToken);
-    var admin = ((AdminDetails) loadUserByUsername(adminId.toString())).getAdmin();
+    var adminUserContext = ((AdminDetails) loadUserByUsername(adminId.toString())).getAdminContext();
     // Admin admin = adminRepository.findById(adminId)
     // .orElseThrow(() -> new UnauthorizedException("존재하지 않는 관리자입니다."));
 
@@ -115,8 +116,8 @@ public class AdminService implements UserDetailsService {
 
     // TODO: accessToken Blacklist
 
-    String newAccessToken = jwtProvider.generateToken(admin);
-    String newRefreshToken = jwtProvider.generateRefreshToken(admin);
+    String newAccessToken = jwtProvider.generateToken(adminUserContext.getEmail(), adminUserContext.getRole());
+    String newRefreshToken = jwtProvider.generateRefreshToken(adminUserContext.getEmail());
 
     token.setRefreshToken(newRefreshToken);
     token.setExpiresAt(ZonedDateTime.now().plusDays(7));
@@ -133,7 +134,7 @@ public class AdminService implements UserDetailsService {
   @Override
   @Cacheable(value = "AdminDetails", key = "#p0")
   public UserDetails loadUserByUsername(String id) throws UsernameNotFoundException {
-    return new AdminDetails(findByIdOrExcept(id));
+    return new AdminDetails(AdminUserContext.fromEntity(findByIdOrExcept(id)));
   }
 
 }
