@@ -16,12 +16,12 @@ import com.smartstore.api.v1.application.admin.admin.dto.AdminLoginResponseDTO;
 import com.smartstore.api.v1.application.admin.admin.dto.AdminSignupRequestDTO;
 import com.smartstore.api.v1.application.admin.admin.dto.AdminTokenRefreshResponseDTO;
 import com.smartstore.api.v1.application.admin.admin.entity.Admin;
-import com.smartstore.api.v1.application.admin.admin.entity.AdminDetails;
 import com.smartstore.api.v1.application.admin.admin.entity.AdminToken;
 import com.smartstore.api.v1.application.admin.admin.provider.AdminJwtProvider;
 import com.smartstore.api.v1.application.admin.admin.repository.AdminRepository;
 import com.smartstore.api.v1.application.admin.admin.repository.AdminTokenRepository;
 import com.smartstore.api.v1.application.admin.admin.vo.AdminUserContext;
+import com.smartstore.api.v1.application.admin.admin.vo.AdminUserDetails;
 import com.smartstore.api.v1.common.constants.enums.Role;
 import com.smartstore.api.v1.common.exception.BadRequestException;
 import com.smartstore.api.v1.common.exception.UnauthorizedException;
@@ -103,7 +103,7 @@ public class AdminService implements UserDetailsService {
     }
 
     UUID adminId = jwtProvider.getUserId(refreshToken);
-    var adminUserContext = ((AdminDetails) loadUserByUsername(adminId.toString())).getAdminContext();
+    var adminUserContext = ((AdminUserDetails) loadUserByUsername(adminId.toString())).getAdminContext();
     // Admin admin = adminRepository.findById(adminId)
     // .orElseThrow(() -> new UnauthorizedException("존재하지 않는 관리자입니다."));
 
@@ -134,7 +134,7 @@ public class AdminService implements UserDetailsService {
   @Override
   @Cacheable(value = "AdminDetails", key = "#p0")
   public UserDetails loadUserByUsername(String id) throws UsernameNotFoundException {
-    return new AdminDetails(AdminUserContext.fromEntity(findByIdOrExcept(id)));
+    return new AdminUserDetails(AdminUserContext.fromEntity(findByIdOrExcept(id)));
   }
 
 }

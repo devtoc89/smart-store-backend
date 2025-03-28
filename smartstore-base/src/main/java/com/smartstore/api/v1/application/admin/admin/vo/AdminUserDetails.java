@@ -1,4 +1,4 @@
-package com.smartstore.api.v1.application.admin.admin.entity;
+package com.smartstore.api.v1.application.admin.admin.vo;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -7,13 +7,11 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import com.smartstore.api.v1.application.admin.admin.vo.AdminUserContext;
-
-public class AdminDetails implements UserDetails {
+public class AdminUserDetails implements UserDetails {
 
   private final transient AdminUserContext adminContext;
 
-  public AdminDetails(AdminUserContext adminContext) {
+  public AdminUserDetails(AdminUserContext adminContext) {
     this.adminContext = adminContext;
   }
 

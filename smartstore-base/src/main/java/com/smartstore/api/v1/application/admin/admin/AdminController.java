@@ -12,8 +12,8 @@ import com.smartstore.api.v1.application.admin.admin.dto.AdminLoginResponseDTO;
 import com.smartstore.api.v1.application.admin.admin.dto.AdminSignupRequestDTO;
 import com.smartstore.api.v1.application.admin.admin.dto.AdminTokenRefreshRequestDTO;
 import com.smartstore.api.v1.application.admin.admin.dto.AdminTokenRefreshResponseDTO;
-import com.smartstore.api.v1.application.admin.admin.entity.AdminDetails;
 import com.smartstore.api.v1.application.admin.admin.service.AdminService;
+import com.smartstore.api.v1.application.admin.admin.vo.AdminUserDetails;
 import com.smartstore.api.v1.common.constants.message.CommonMessage;
 import com.smartstore.api.v1.common.constants.url.AdminBaseURLConstants;
 import com.smartstore.api.v1.common.dto.ResponseWrapper;
@@ -63,7 +63,7 @@ public class AdminController {
 
   @PostMapping("/logout")
   // @Operation(hidden = true) // Swagger 문서 제외
-  public ResponseEntity<ResponseWrapper<String>> logout(@AuthenticationPrincipal AdminDetails admin) {
+  public ResponseEntity<ResponseWrapper<String>> logout(@AuthenticationPrincipal AdminUserDetails admin) {
     adminService.logout(admin.getAdminContext().getId());
     return ResponseEntity.ok(ResponseWrapper.success("로그아웃 되었습니다."));
   }
