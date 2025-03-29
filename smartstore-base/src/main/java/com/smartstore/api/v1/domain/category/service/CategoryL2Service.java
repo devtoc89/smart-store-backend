@@ -29,6 +29,15 @@ public class CategoryL2Service {
 
   private final CategoryL2Repository categoryL2Repository;
 
+  private CategoryL2 applyCreate(UUID id, CategoryL2VO vo) {
+    return CategoryL2.builder()
+        .id(id)
+        .name(vo.getName())
+        .orderBy(vo.getOrderBy())
+        .categoryL1(entityManager.getReference(CategoryL1.class, vo.getCategoryL1Id()))
+        .build();
+  }
+
   private CategoryL2 applyUpdate(CategoryL2 entity, CategoryL2VO vo) {
     entity.setName(vo.getName());
     entity.setOrderBy(vo.getOrderBy());
@@ -70,12 +79,7 @@ public class CategoryL2Service {
 
   @Transactional(propagation = Propagation.REQUIRED)
   public CategoryL2VO create(UUID id, CategoryL2VO vo) {
-    var entity = CategoryL2.builder()
-        .id(id)
-        .name(vo.getName())
-        .categoryL1(entityManager.getReference(CategoryL1.class, vo.getCategoryL1Id()))
-        .build();
-
+    var entity = applyCreate(id, vo);
     return CategoryL2VO.fromEntity(categoryL2Repository.save(entity));
   }
 

@@ -22,7 +22,7 @@ public class CategoryNodeVO {
     return CategoryNodeVO.builder()
         .base(BaseEntityVO.fromEntity(categoryNode))
         .name(categoryNode.getName())
-        .categoryL2Id(categoryNode.getId())
+        .categoryL2Id(categoryNode.getCategoryL2().getId())
         .orderBy(categoryNode.getOrderBy())
         .build();
   }

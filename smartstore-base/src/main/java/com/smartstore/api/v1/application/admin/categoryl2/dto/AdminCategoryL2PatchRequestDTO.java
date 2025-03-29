@@ -29,7 +29,7 @@ public class AdminCategoryL2PatchRequestDTO implements AdminCategoryL2UpsertRequ
   private Integer orderBy;
 
   @UUID
-  @Schema(description = "카테고리(대) ID", example = "\"550e8400-e29b-41d4-a716-446655440000\"")
+  @Schema(description = "1차 카테고리 ID", example = "\"550e8400-e29b-41d4-a716-446655440000\"")
   private String categoryL1Id;
 
 }

@@ -8,6 +8,7 @@ import java.util.NoSuchElementException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -16,6 +17,7 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import com.smartstore.api.v1.common.dto.CustomErrorResponseDTO;
 import com.smartstore.api.v1.common.exception.BaseException;
+import com.smartstore.api.v1.common.exception.UnauthorizedException;
 import com.smartstore.api.v1.common.utils.exception.ExceptionUtil;
 
 import jakarta.validation.ConstraintViolationException;
@@ -49,9 +51,15 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(HttpStatus.NO_CONTENT).body(errorResponse);
   }
 
-  @ExceptionHandler({ MethodArgumentNotValidException.class, BindException.class, ConstraintViolationException.class })
+  @ExceptionHandler({
+      MethodArgumentNotValidException.class,
+      BindException.class,
+      ConstraintViolationException.class,
+      UsernameNotFoundException.class,
+      UnauthorizedException.class })
   public ResponseEntity<CustomErrorResponseDTO> handleValidationException(Exception ex) {
     List<String> errors = new ArrayList<>();
+    String message = "잘못된 요청입니다.";
 
     if (ex instanceof MethodArgumentNotValidException methodEx) {
       // `@Valid`로 검증 시 발생 (JSON 요청 Body)
@@ -75,11 +83,13 @@ public class GlobalExceptionHandler {
           .stream()
           .map(ExceptionUtil::formatConstraintViolation)
           .toList();
+    } else if (ex instanceof UsernameNotFoundException || ex instanceof UnauthorizedException) {
+      message = "유효하지 않은 사용자 정보입니다.";
     }
 
     CustomErrorResponseDTO errorResponse = new CustomErrorResponseDTO(
         HttpStatus.BAD_REQUEST.value(),
-        "잘못된 요청입니다.",
+        message,
         errors,
         LocalDateTime.now());
 

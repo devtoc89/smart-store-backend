@@ -33,8 +33,8 @@ public class AdminCategoryL2PostRequestDTO implements AdminCategoryL2UpsertReque
   private Integer orderBy = -1;
 
   @UUID
-  @NotBlank(message = "카테고리(대) ID는 필수 입력값입니다.")
-  @Schema(description = "카테고리(대) ID", example = "\"550e8400-e29b-41d4-a716-446655440000\"")
+  @NotBlank(message = "1차 카테고리 ID는 필수 입력값입니다.")
+  @Schema(description = "1차 카테고리 ID", example = "\"550e8400-e29b-41d4-a716-446655440000\"")
   private String categoryL1Id;
 
 }

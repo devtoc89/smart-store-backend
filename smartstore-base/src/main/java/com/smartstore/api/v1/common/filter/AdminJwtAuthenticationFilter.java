@@ -3,6 +3,7 @@ package com.smartstore.api.v1.common.filter;
 import java.io.IOException;
 import java.util.UUID;
 
+import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -10,6 +11,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.smartstore.api.v1.application.admin.admin.AdminPublicMeta;
 import com.smartstore.api.v1.application.admin.admin.provider.AdminJwtProvider;
 import com.smartstore.api.v1.application.admin.admin.service.AdminDomainService;
 
@@ -27,8 +29,18 @@ public class AdminJwtAuthenticationFilter extends OncePerRequestFilter {
   private final AdminDomainService adminDomainService;
 
   @Override
-  protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+  protected void doFilterInternal(
+      @NonNull HttpServletRequest request,
+      @NonNull HttpServletResponse response,
+      @NonNull FilterChain chain)
       throws ServletException, IOException {
+
+    String path = request.getRequestURI();
+
+    if (path.startsWith(AdminPublicMeta.SIGNUP_FULL_PATH) || path.startsWith(AdminPublicMeta.LOGIN_FULL_PATH)) {
+      chain.doFilter(request, response);
+      return;
+    }
 
     String token = resolveToken(request);
 

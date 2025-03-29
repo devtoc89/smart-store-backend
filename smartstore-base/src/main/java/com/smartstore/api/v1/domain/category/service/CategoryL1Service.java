@@ -23,6 +23,14 @@ public class CategoryL1Service {
 
   private final CategoryL1Repository categoryL1Repository;
 
+  private CategoryL1 applyCreate(UUID id, CategoryL1VO vo) {
+    return CategoryL1.builder()
+        .id(id)
+        .name(vo.getName())
+        .orderBy(vo.getOrderBy())
+        .build();
+  }
+
   private CategoryL1 applyUpdate(CategoryL1 entity, CategoryL1VO vo) {
     entity.setName(vo.getName());
     entity.setOrderBy(vo.getOrderBy());
@@ -40,7 +48,7 @@ public class CategoryL1Service {
   }
 
   private CategoryL1 findByIdOrExcept(UUID id) {
-    return categoryL1Repository.findById(id).orElseThrow(() -> new NoSuchElementException("해당하는 카테고리(대)가 존재하지 않습니다."));
+    return categoryL1Repository.findById(id).orElseThrow(() -> new NoSuchElementException("해당하는 1차 카테고리가 존재하지 않습니다."));
   }
 
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
@@ -60,11 +68,7 @@ public class CategoryL1Service {
 
   @Transactional(propagation = Propagation.REQUIRED)
   public CategoryL1VO create(UUID id, CategoryL1VO vo) {
-    var entity = CategoryL1.builder()
-        .id(id)
-        .name(vo.getName())
-        .build();
-
+    var entity = applyCreate(id, vo);
     return CategoryL1VO.fromEntity(categoryL1Repository.save(entity));
   }
 

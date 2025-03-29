@@ -49,8 +49,9 @@ public class AdminAppService {
 
   @Transactional
   public void registerAdmin(AdminSignupRequestDTO request) {
+    // TODO: 인증수단
     if (adminDomainService.existsByEmail(request.getEmail())) {
-      throw new BadRequestException("이미 등록된 이메일입니다.");
+      throw new BadRequestException("해당 이메일로 인증 메일을 보냈습니다.");
     }
 
     Admin admin = Admin.builder()
@@ -69,7 +70,7 @@ public class AdminAppService {
   @Transactional
   public AdminLoginResponseDTO login(AdminLoginRequestDTO request) {
     Admin admin = adminDomainService.findByEmail(request.getEmail())
-        .orElseThrow(() -> new UnauthorizedException("로그인 정보가 일치하지 않습니다."));
+        .orElseThrow(() -> new UnauthorizedException(""));
 
     // TODO: super admin 생성, 관리자 계정 승인 프로세스
     // if (!admin.getIsActivated().equals(true)) {
@@ -79,7 +80,7 @@ public class AdminAppService {
     if (!passwordEncoder.matches(request.getPassword(), admin.getPassword())) {
       admin.setLoginFailCount(admin.getLoginFailCount() + 1);
       adminDomainService.save(admin);
-      throw new UnauthorizedException("로그인 정보가 일치하지 않습니다.");
+      throw new UnauthorizedException("");
     }
 
     var allTokenConext = generateAllTokenContext(admin.getId(), admin.getRole());
@@ -105,7 +106,7 @@ public class AdminAppService {
 
   public AdminTokenRefreshResponseDTO refreshAccessToken(String refreshToken) {
     if (!jwtProvider.validateToken(refreshToken)) {
-      throw new UnauthorizedException("유효하지 않은 리프레시 토큰입니다.");
+      throw new UnauthorizedException("");
     }
 
     UUID adminId = jwtProvider.getUserId(refreshToken);
@@ -113,10 +114,10 @@ public class AdminAppService {
         .getAdminContext();
 
     AdminToken token = adminTokenRepository.findByRefreshToken(refreshToken)
-        .orElseThrow(() -> new UnauthorizedException("유효하지 않은 리프레시 토큰입니다."));
+        .orElseThrow(() -> new UnauthorizedException(""));
 
     if (token.isExpired()) {
-      throw new UnauthorizedException("유효하지 않은 리프레시 토큰입니다.");
+      throw new UnauthorizedException("");
     }
     var allTokenConext = generateAllTokenContext(adminUserContext.getId(), adminUserContext.getRole());
     // // TODO: accessToken Blacklist

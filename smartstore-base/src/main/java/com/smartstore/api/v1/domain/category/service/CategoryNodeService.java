@@ -29,6 +29,15 @@ public class CategoryNodeService {
 
   private final CategoryNodeRepository categoryNodeRepository;
 
+  private CategoryNode applyCreate(UUID id, CategoryNodeVO vo) {
+    return CategoryNode.builder()
+        .id(id)
+        .name(vo.getName())
+        .orderBy(vo.getOrderBy())
+        .categoryL2(entityManager.getReference(CategoryL2.class, vo.getCategoryL2Id()))
+        .build();
+  }
+
   private CategoryNode applyUpdate(CategoryNode entity, CategoryNodeVO vo) {
     entity.setName(vo.getName());
     entity.setOrderBy(vo.getOrderBy());
@@ -71,11 +80,7 @@ public class CategoryNodeService {
 
   @Transactional(propagation = Propagation.REQUIRED)
   public CategoryNodeVO create(UUID id, CategoryNodeVO vo) {
-    var entity = CategoryNode.builder()
-        .id(id)
-        .name(vo.getName())
-        .categoryL2(entityManager.getReference(CategoryL2.class, vo.getCategoryL2Id()))
-        .build();
+    var entity = applyCreate(id, vo);
 
     return CategoryNodeVO.fromEntity(categoryNodeRepository.save(entity));
   }

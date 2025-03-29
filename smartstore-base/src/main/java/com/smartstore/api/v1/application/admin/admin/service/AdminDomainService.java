@@ -23,7 +23,7 @@ public class AdminDomainService implements UserDetailsService {
 
   public Admin findByIdOrExcept(String id) {
     return adminRepository.findById(UUID.fromString(id))
-        .orElseThrow(() -> new UsernameNotFoundException("유효하지 않은 사용자입니다."));
+        .orElseThrow(() -> new UsernameNotFoundException(""));
   }
 
   public Admin save(Admin entity) {
