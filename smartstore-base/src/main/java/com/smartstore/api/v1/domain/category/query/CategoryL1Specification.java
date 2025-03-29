@@ -3,7 +3,6 @@ package com.smartstore.api.v1.domain.category.query;
 import org.springframework.data.jpa.domain.Specification;
 
 import com.smartstore.api.v1.common.constants.message.CommonMessage;
-import com.smartstore.api.v1.common.domain.query.BaseSpecification;
 import com.smartstore.api.v1.common.utils.sql.SQLUtil;
 import com.smartstore.api.v1.domain.category.entity.CategoryL1;
 
@@ -18,9 +17,4 @@ public class CategoryL1Specification {
         : criteriaBuilder.like(root.get("name"), "%" + SQLUtil.escapeLike(name) + "%");
   }
 
-  public static Specification<CategoryL1> withFilters(String name, Boolean isDeleted) {
-    return Specification
-        .where(BaseSpecification.<CategoryL1>isDeleted(isDeleted))
-        .and(hasName(name));
-  }
 }
