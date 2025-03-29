@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -18,6 +19,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.smartstore.api.v1.application.admin.admin.AdminPublicMeta;
 import com.smartstore.api.v1.common.constants.enums.Role;
+import com.smartstore.api.v1.common.constants.url.AdminBaseURLConstants;
 import com.smartstore.api.v1.common.filter.AdminJwtAuthenticationFilter;
 
 import jakarta.annotation.PostConstruct;
@@ -39,28 +41,70 @@ public class SecurityConfig {
         .toList();
   }
 
+  private HttpSecurity applyCommonSecurity(HttpSecurity http) throws Exception {
+    return http
+        .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+        .csrf(csrf -> csrf.disable())
+        .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+  }
+
   @Bean
   public PasswordEncoder passwordEncoder() {
     return new BCryptPasswordEncoder();
   }
 
   @Bean
-  public SecurityFilterChain securityFilterChain(HttpSecurity http, AdminJwtAuthenticationFilter adminJwtFilter)
+  @Order(1)
+  public SecurityFilterChain superAdminSecurityFilterChain(HttpSecurity http,
+      AdminJwtAuthenticationFilter adminJwtFilter)
       throws Exception {
-    http
-        // .cors(cors -> cors.configurationSource(corsConfigurationSource())) // CORS 적용
-        .cors(cors -> cors.configurationSource(corsConfigurationSource())) // CORS 적용
-        .csrf(csrf -> csrf.disable())
-        .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
-    http
-        .securityMatcher("/**")
+    http = applyCommonSecurity(http.securityMatcher(AdminBaseURLConstants.SUPER_ADMIN_URL + "/**"))
         .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/actuator/**").permitAll()
-            .requestMatchers("/swagger/**").permitAll()
+            .anyRequest().hasRole(Role.SUPER_ADMIN.name()))
+        .addFilterBefore(adminJwtFilter, UsernamePasswordAuthenticationFilter.class);
+
+    return http.build();
+  }
+
+  @Bean
+  @Order(2)
+  public SecurityFilterChain adminSecurityFilterChain(HttpSecurity http, AdminJwtAuthenticationFilter adminJwtFilter)
+      throws Exception {
+
+    http = applyCommonSecurity(http.securityMatcher(AdminBaseURLConstants.BASE_URL + "/**"))
+        .authorizeHttpRequests(auth -> auth
             .requestMatchers(AdminPublicMeta.SIGNUP_FULL_PATH, AdminPublicMeta.LOGIN_FULL_PATH).permitAll()
             .anyRequest().hasRole(Role.ADMIN.name()))
         .addFilterBefore(adminJwtFilter, UsernamePasswordAuthenticationFilter.class);
+
+    return http.build();
+  }
+
+  // @Bean
+  // @Order(3)
+  // public SecurityFilterChain userSecurityFilterChain(HttpSecurity http,
+  // AdminJwtAuthenticationFilter adminJwtFilter)
+  // throws Exception {
+
+  // http = applyCommonSecurity(http.securityMatcher(UserBaseURLConstants.BASE_URL
+  // + "/**"))
+  // .authorizeHttpRequests(auth -> auth
+  // .anyRequest().hasAnyRole(Role.USER.name(), Role.ADMIN.name()))
+  // .addFilterBefore(adminJwtFilter, UsernamePasswordAuthenticationFilter.class);
+
+  // return http.build();
+  // }
+
+  @Bean
+  @Order(4)
+  public SecurityFilterChain commonSecurityFilterChain(HttpSecurity http)
+      throws Exception {
+
+    http = applyCommonSecurity(http.securityMatcher("/**"))
+        .authorizeHttpRequests(auth -> auth
+            .requestMatchers("/actuator/**", "/swagger/**").permitAll()
+            .anyRequest().denyAll());
 
     return http.build();
   }

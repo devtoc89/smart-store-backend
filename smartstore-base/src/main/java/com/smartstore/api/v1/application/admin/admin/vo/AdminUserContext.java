@@ -2,8 +2,8 @@ package com.smartstore.api.v1.application.admin.admin.vo;
 
 import java.util.UUID;
 
-import com.smartstore.api.v1.application.admin.admin.entity.Admin;
 import com.smartstore.api.v1.common.constants.enums.Role;
+import com.smartstore.api.v1.domain.admin.entity.Admin;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -26,10 +26,12 @@ public class AdminUserContext {
   private final Integer loginFailCount;
 
   public static AdminUserContext fromEntity(Admin admin) {
+    // 민감한 정보는 삭제한 context 제공
+    // 비밀번호는 제거되므로 주위!
     return AdminUserContext.builder()
         .id(admin.getId())
         .email(admin.getEmail())
-        .password(admin.getPassword())
+        .password("")
         .nickname(admin.getNickname())
         .role(admin.getRole())
         .isActivated(admin.getIsActivated())

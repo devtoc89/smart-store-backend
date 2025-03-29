@@ -1,4 +1,4 @@
-package com.smartstore.api.v1.application.admin.admin.entity;
+package com.smartstore.api.v1.domain.admin.entity;
 
 import java.time.ZonedDateTime;
 

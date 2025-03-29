@@ -40,8 +40,11 @@ public class AdminFilterRequestBaseDTO {
   @Schema(description = "삭제 여부 필터 (ACTIVE: 삭제된 항목 포함, INACTIVE: 삭제되지 않은 항목만, ALL: 전체)", example = "ACTIVE")
   private ActiveStatus activeStatus = ActiveStatus.ACTIVE;
 
-  private Boolean convertActiveStatusToisDeleted() {
+  @SuppressWarnings("java:S2447")
+  private Boolean convertActiveStatusToIsDeleted() {
     if (this.activeStatus == null || this.activeStatus == ActiveStatus.ALL) {
+      // nullable Boolean intentionally used to represent tri-state logic (null / true
+      // / false)
       return null;
     }
     return (this.activeStatus != ActiveStatus.ACTIVE);
@@ -51,7 +54,7 @@ public class AdminFilterRequestBaseDTO {
     return BaseFilterConditionVO.builder()
         .fromDate(DateUtil.parseWithDefaultZone(from))
         .toDate(DateUtil.parseWithDefaultZone(to))
-        .isDeleted(convertActiveStatusToisDeleted())
+        .isDeleted(convertActiveStatusToIsDeleted())
         .ids(id == null ? null
             : id.stream()
                 .map(StringUtil::stringToUUID)

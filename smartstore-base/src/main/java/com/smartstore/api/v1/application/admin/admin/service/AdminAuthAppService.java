@@ -11,25 +11,27 @@ import com.smartstore.api.v1.application.admin.admin.dto.AdminLoginRequestDTO;
 import com.smartstore.api.v1.application.admin.admin.dto.AdminLoginResponseDTO;
 import com.smartstore.api.v1.application.admin.admin.dto.AdminSignupRequestDTO;
 import com.smartstore.api.v1.application.admin.admin.dto.AdminTokenRefreshResponseDTO;
-import com.smartstore.api.v1.application.admin.admin.entity.Admin;
-import com.smartstore.api.v1.application.admin.admin.entity.AdminToken;
-import com.smartstore.api.v1.application.admin.admin.provider.AdminJwtProvider;
-import com.smartstore.api.v1.application.admin.admin.repository.AdminTokenRepository;
 import com.smartstore.api.v1.application.admin.admin.vo.AdminUserDetails;
 import com.smartstore.api.v1.common.constants.enums.Role;
 import com.smartstore.api.v1.common.exception.BadRequestException;
 import com.smartstore.api.v1.common.exception.UnauthorizedException;
+import com.smartstore.api.v1.common.provider.AdminJwtProvider;
 import com.smartstore.api.v1.common.utils.date.DateUtil;
+import com.smartstore.api.v1.domain.admin.entity.Admin;
+import com.smartstore.api.v1.domain.admin.entity.AdminToken;
+import com.smartstore.api.v1.domain.admin.repository.AdminTokenRepository;
+import com.smartstore.api.v1.domain.admin.service.AdminDomainService;
 
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class AdminAppService {
+public class AdminAuthAppService {
   private final AdminTokenRepository adminTokenRepository;
   private final PasswordEncoder passwordEncoder;
   private final AdminJwtProvider jwtProvider;
   private final AdminDomainService adminDomainService;
+  private final AdminUserDetailsAppService adminUserDetailsAppService;
 
   private record TokenContext(String accessToken, long accessTokenExpiredAt, String refreshToken,
       long refreshTokenExpiredAt) {
@@ -72,10 +74,9 @@ public class AdminAppService {
     Admin admin = adminDomainService.findByEmail(request.getEmail())
         .orElseThrow(() -> new UnauthorizedException(""));
 
-    // TODO: super admin 생성, 관리자 계정 승인 프로세스
-    // if (!admin.getIsActivated().equals(true)) {
-    // throw new ForbiddenException("승인되지 않은 관리자 계정입니다.");
-    // }
+    if (!admin.getIsActivated().equals(true)) {
+      throw new UnauthorizedException("");
+    }
 
     if (!passwordEncoder.matches(request.getPassword(), admin.getPassword())) {
       admin.setLoginFailCount(admin.getLoginFailCount() + 1);
@@ -91,7 +92,7 @@ public class AdminAppService {
         .admin(admin)
         .refreshToken(allTokenConext.refreshToken)
         .expiresAt(DateUtil.fromMillisecondWithDefaultZone(allTokenConext.refreshTokenExpiredAt))
-        .build()); // 관계 끊기
+        .build());
 
     adminDomainService.save(admin);
 
@@ -110,7 +111,7 @@ public class AdminAppService {
     }
 
     UUID adminId = jwtProvider.getUserId(refreshToken);
-    var adminUserContext = ((AdminUserDetails) adminDomainService.loadUserByUsername(adminId.toString()))
+    var adminUserContext = ((AdminUserDetails) adminUserDetailsAppService.loadUserByUsername(adminId.toString()))
         .getAdminContext();
 
     AdminToken token = adminTokenRepository.findByRefreshToken(refreshToken)
@@ -120,7 +121,6 @@ public class AdminAppService {
       throw new UnauthorizedException("");
     }
     var allTokenConext = generateAllTokenContext(adminUserContext.getId(), adminUserContext.getRole());
-    // // TODO: accessToken Blacklist
 
     token.setRefreshToken(allTokenConext.refreshToken);
     token.setExpiresAt(DateUtil.fromMillisecondWithDefaultZone(allTokenConext.refreshTokenExpiredAt));

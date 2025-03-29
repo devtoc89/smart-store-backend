@@ -34,9 +34,7 @@ public class AdminUserDetails implements UserDetails {
 
   @Override
   public boolean isAccountNonExpired() {
-    // TODO: 개정 활성화 프로세스
-    return true;
-    // return adminContextHoler.getIsActivated(); // isActivated가 true일 때만 계정 유효
+    return adminContext.getIsActivated(); // isActivated가 true일 때만 계정 유효
   }
 
   @Override
@@ -55,6 +53,6 @@ public class AdminUserDetails implements UserDetails {
   }
 
   public AdminUserContext getAdminContext() {
-    return adminContext; // 원본 Admin 객체를 반환
+    return adminContext;
   }
 }

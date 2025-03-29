@@ -1,4 +1,4 @@
-package com.smartstore.api.v1.application.admin.admin.provider;
+package com.smartstore.api.v1.common.provider;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Date;

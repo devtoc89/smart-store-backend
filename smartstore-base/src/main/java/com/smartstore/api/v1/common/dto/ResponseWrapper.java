@@ -39,11 +39,21 @@ public class ResponseWrapper<T> {
     this.message = message;
   }
 
+  public ResponseWrapper(String message, boolean ok) {
+    this.ok = ok;
+    this.data = data;
+    this.message = message;
+  }
+
   public static <T> ResponseWrapper<T> success(T data) {
     return new ResponseWrapper<>(data);
   }
 
   public static <T> ResponseWrapper<T> success(T data, String message) {
     return new ResponseWrapper<>(data, message);
+  }
+
+  public static <T> ResponseWrapper<T> fail(String message) {
+    return new ResponseWrapper<>(message, false);
   }
 }

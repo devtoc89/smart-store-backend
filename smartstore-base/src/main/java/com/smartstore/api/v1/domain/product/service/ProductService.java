@@ -20,6 +20,8 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 
+// mapper layer 고민...
+
 @Service
 @RequiredArgsConstructor
 public class ProductService {
@@ -28,6 +30,15 @@ public class ProductService {
   private EntityManager entityManager;
   private final ProductRepository productRepository;
   private final CloudFrontProperties cloudFrontProperties;
+
+  public Product applyCreate(UUID id, ProductVO vo) {
+    return Product.builder()
+        .id(id)
+        .name(vo.getName())
+        .price(vo.getPrice())
+        .categoryId(vo.getCategoryId())
+        .build();
+  }
 
   public void applyUpdate(Product entity, ProductVO vo) {
     entity.setName(vo.getName());
@@ -69,12 +80,7 @@ public class ProductService {
 
   @Transactional(propagation = Propagation.REQUIRED)
   public ProductVO create(UUID id, ProductVO vo) {
-    var newProduct = Product.builder()
-        .id(id)
-        .name(vo.getName())
-        .price(vo.getPrice())
-        .categoryId(vo.getCategoryId())
-        .build();
+    var newProduct = applyCreate(id, vo);
 
     return ProductVO.fromEntity(productRepository.save(newProduct), cloudFrontProperties.getUrl());
   }

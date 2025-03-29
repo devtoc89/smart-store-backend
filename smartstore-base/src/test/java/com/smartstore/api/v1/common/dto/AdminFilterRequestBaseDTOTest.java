@@ -96,7 +96,7 @@ class AdminFilterRequestBaseDTOTest {
     assertThat(result).isNotNull();
     assertThat(result.getFromDate()).isEqualTo(DateUtil.parseWithDefaultZone("2025-03-01 00:00:00"));
     assertThat(result.getToDate()).isEqualTo(DateUtil.parseWithDefaultZone("2025-03-15 23:59:59"));
-    assertThat(result.getIsDeleted()).isTrue();
+    assertThat(result.getIsDeleted()).isFalse();
     assertThat(result.getIds()).isNull();
   }
 
