@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.smartstore.api.v1.application.admin.admin.provider.AdminJwtProvider;
-import com.smartstore.api.v1.application.admin.admin.service.AdminService;
+import com.smartstore.api.v1.application.admin.admin.service.AdminDomainService;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -24,7 +24,7 @@ import lombok.RequiredArgsConstructor;
 public class AdminJwtAuthenticationFilter extends OncePerRequestFilter {
 
   private final AdminJwtProvider jwtProvider;
-  private final AdminService adminService;
+  private final AdminDomainService adminDomainService;
 
   @Override
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
@@ -35,7 +35,7 @@ public class AdminJwtAuthenticationFilter extends OncePerRequestFilter {
     if (token != null && jwtProvider.validateToken(token)) {
       UUID adminId = jwtProvider.getUserId(token); // 또는 email
 
-      UserDetails userDetails = adminService.loadUserByUsername(adminId.toString()); // 관리자 정보 조회
+      UserDetails userDetails = adminDomainService.loadUserByUsername(adminId.toString()); // 관리자 정보 조회
 
       Authentication authentication = new UsernamePasswordAuthenticationToken(
           userDetails, null, userDetails.getAuthorities()); // 인증 객체 생성

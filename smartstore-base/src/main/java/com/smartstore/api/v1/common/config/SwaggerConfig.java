@@ -12,7 +12,7 @@ import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 
 @Primary
-@Profile("dev")
+@Profile({ "dev", "local" })
 @Configuration
 public class SwaggerConfig {
   @Bean
@@ -33,4 +33,5 @@ public class SwaggerConfig {
         .components(components);
 
   }
+
 }

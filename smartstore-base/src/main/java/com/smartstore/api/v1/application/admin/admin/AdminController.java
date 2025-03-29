@@ -12,7 +12,7 @@ import com.smartstore.api.v1.application.admin.admin.dto.AdminLoginResponseDTO;
 import com.smartstore.api.v1.application.admin.admin.dto.AdminSignupRequestDTO;
 import com.smartstore.api.v1.application.admin.admin.dto.AdminTokenRefreshRequestDTO;
 import com.smartstore.api.v1.application.admin.admin.dto.AdminTokenRefreshResponseDTO;
-import com.smartstore.api.v1.application.admin.admin.service.AdminService;
+import com.smartstore.api.v1.application.admin.admin.service.AdminAppService;
 import com.smartstore.api.v1.application.admin.admin.vo.AdminUserDetails;
 import com.smartstore.api.v1.common.constants.message.CommonMessage;
 import com.smartstore.api.v1.common.constants.url.AdminBaseURLConstants;
@@ -40,31 +40,31 @@ final class Config {
 @RequestMapping(Config.BASE_URL)
 @Tag(name = Config.TAG_NAME, description = Config.TAG_DESC)
 public class AdminController {
-  private final AdminService adminService;
+  private final AdminAppService adminAppService;
 
   @PostMapping(Config.SIGNUP_PATH)
   public ResponseEntity<ResponseWrapper<String>> signup(@Valid @RequestBody AdminSignupRequestDTO request) {
-    adminService.registerAdmin(request);
+    adminAppService.registerAdmin(request);
     return ResponseEntity.ok().body(ResponseWrapper.success("관리자 계정이 등록되었습니다."));
   }
 
   @PostMapping(Config.LOGIN_PATH)
   public ResponseEntity<ResponseWrapper<AdminLoginResponseDTO>> login(
       @Valid @RequestBody AdminLoginRequestDTO request) {
-    return ResponseEntity.ok(ResponseWrapper.success(adminService.login(request)));
+    return ResponseEntity.ok(ResponseWrapper.success(adminAppService.login(request)));
   }
 
   @PostMapping("/token/refresh")
   public ResponseEntity<ResponseWrapper<AdminTokenRefreshResponseDTO>> refreshToken(
       @RequestBody AdminTokenRefreshRequestDTO body) {
 
-    return ResponseEntity.ok(ResponseWrapper.success(adminService.refreshAccessToken(body.getRefreshToken())));
+    return ResponseEntity.ok(ResponseWrapper.success(adminAppService.refreshAccessToken(body.getRefreshToken())));
   }
 
   @PostMapping("/logout")
   // @Operation(hidden = true) // Swagger 문서 제외
   public ResponseEntity<ResponseWrapper<String>> logout(@AuthenticationPrincipal AdminUserDetails admin) {
-    adminService.logout(admin.getAdminContext().getId());
+    adminAppService.logout(admin.getAdminContext().getId());
     return ResponseEntity.ok(ResponseWrapper.success("로그아웃 되었습니다."));
   }
 }

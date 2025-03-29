@@ -3,10 +3,6 @@ package com.smartstore.api.v1.application.admin.admin.service;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,26 +14,42 @@ import com.smartstore.api.v1.application.admin.admin.dto.AdminTokenRefreshRespon
 import com.smartstore.api.v1.application.admin.admin.entity.Admin;
 import com.smartstore.api.v1.application.admin.admin.entity.AdminToken;
 import com.smartstore.api.v1.application.admin.admin.provider.AdminJwtProvider;
-import com.smartstore.api.v1.application.admin.admin.repository.AdminRepository;
 import com.smartstore.api.v1.application.admin.admin.repository.AdminTokenRepository;
-import com.smartstore.api.v1.application.admin.admin.vo.AdminUserContext;
 import com.smartstore.api.v1.application.admin.admin.vo.AdminUserDetails;
 import com.smartstore.api.v1.common.constants.enums.Role;
 import com.smartstore.api.v1.common.exception.BadRequestException;
 import com.smartstore.api.v1.common.exception.UnauthorizedException;
+import com.smartstore.api.v1.common.utils.date.DateUtil;
 
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class AdminService implements UserDetailsService {
-  private final AdminRepository adminRepository;
+public class AdminAppService {
   private final AdminTokenRepository adminTokenRepository;
   private final PasswordEncoder passwordEncoder;
   private final AdminJwtProvider jwtProvider;
+  private final AdminDomainService adminDomainService;
 
+  private record TokenContext(String accessToken, long accessTokenExpiredAt, String refreshToken,
+      long refreshTokenExpiredAt) {
+  }
+
+  private TokenContext generateAllTokenContext(UUID id, Role role) {
+    var idStr = id.toString();
+    var now = System.currentTimeMillis();
+    var accessTokenExpiredAt = jwtProvider.getAccessTokenValidity() + now;
+    var refreshTokenExpiredAt = jwtProvider.getRefreshTokenValidity() + now;
+    // ✅ Access / Refresh Token 발급
+    String accessToken = jwtProvider.generateAccessToken(idStr, role, accessTokenExpiredAt);
+    String refreshToken = jwtProvider.generateRefreshToken(idStr, refreshTokenExpiredAt);
+
+    return new TokenContext(accessToken, accessTokenExpiredAt, refreshToken, refreshTokenExpiredAt);
+  }
+
+  @Transactional
   public void registerAdmin(AdminSignupRequestDTO request) {
-    if (adminRepository.existsByEmail(request.getEmail())) {
+    if (adminDomainService.existsByEmail(request.getEmail())) {
       throw new BadRequestException("이미 등록된 이메일입니다.");
     }
 
@@ -51,12 +63,12 @@ public class AdminService implements UserDetailsService {
         .createdAt(ZonedDateTime.now()) // BaseEntity 필드
         .build();
 
-    adminRepository.save(admin);
+    adminDomainService.save(admin);
   }
 
   @Transactional
   public AdminLoginResponseDTO login(AdminLoginRequestDTO request) {
-    Admin admin = adminRepository.findByEmail(request.getEmail())
+    Admin admin = adminDomainService.findByEmail(request.getEmail())
         .orElseThrow(() -> new UnauthorizedException("로그인 정보가 일치하지 않습니다."));
 
     // TODO: super admin 생성, 관리자 계정 승인 프로세스
@@ -66,29 +78,23 @@ public class AdminService implements UserDetailsService {
 
     if (!passwordEncoder.matches(request.getPassword(), admin.getPassword())) {
       admin.setLoginFailCount(admin.getLoginFailCount() + 1);
-      adminRepository.save(admin);
+      adminDomainService.save(admin);
       throw new UnauthorizedException("로그인 정보가 일치하지 않습니다.");
     }
 
+    var allTokenConext = generateAllTokenContext(admin.getId(), admin.getRole());
+
     admin.setLoginFailCount(0);
     admin.setLastLoginAt(ZonedDateTime.now());
-    admin.setToken(null); // 관계 끊기
-
-    adminRepository.save(admin);
-
-    // ✅ Access / Refresh Token 발급
-    String accessToken = jwtProvider.generateToken(admin.getEmail(), admin.getRole());
-    String refreshToken = jwtProvider.generateRefreshToken(admin.getEmail());
-    ZonedDateTime refreshExpiresAt = ZonedDateTime.now().plusDays(7);
-
-    // ✅ RefreshToken 저장
-    adminTokenRepository.save(AdminToken.builder()
+    admin.setToken(AdminToken.builder()
         .admin(admin)
-        .refreshToken(refreshToken)
-        .expiresAt(refreshExpiresAt)
-        .build());
+        .refreshToken(allTokenConext.refreshToken)
+        .expiresAt(DateUtil.fromMillisecondWithDefaultZone(allTokenConext.refreshTokenExpiredAt))
+        .build()); // 관계 끊기
 
-    return new AdminLoginResponseDTO(accessToken, refreshToken);
+    adminDomainService.save(admin);
+
+    return new AdminLoginResponseDTO(allTokenConext.accessToken, allTokenConext.refreshToken);
   }
 
   @Transactional
@@ -103,38 +109,23 @@ public class AdminService implements UserDetailsService {
     }
 
     UUID adminId = jwtProvider.getUserId(refreshToken);
-    var adminUserContext = ((AdminUserDetails) loadUserByUsername(adminId.toString())).getAdminContext();
-    // Admin admin = adminRepository.findById(adminId)
-    // .orElseThrow(() -> new UnauthorizedException("존재하지 않는 관리자입니다."));
+    var adminUserContext = ((AdminUserDetails) adminDomainService.loadUserByUsername(adminId.toString()))
+        .getAdminContext();
 
     AdminToken token = adminTokenRepository.findByRefreshToken(refreshToken)
-        .orElseThrow(() -> new UnauthorizedException("등록되지 않은 리프레시 토큰입니다."));
+        .orElseThrow(() -> new UnauthorizedException("유효하지 않은 리프레시 토큰입니다."));
 
     if (token.isExpired()) {
-      throw new UnauthorizedException("리프레시 토큰이 만료되었습니다.");
+      throw new UnauthorizedException("유효하지 않은 리프레시 토큰입니다.");
     }
+    var allTokenConext = generateAllTokenContext(adminUserContext.getId(), adminUserContext.getRole());
+    // // TODO: accessToken Blacklist
 
-    // TODO: accessToken Blacklist
-
-    String newAccessToken = jwtProvider.generateToken(adminUserContext.getEmail(), adminUserContext.getRole());
-    String newRefreshToken = jwtProvider.generateRefreshToken(adminUserContext.getEmail());
-
-    token.setRefreshToken(newRefreshToken);
-    token.setExpiresAt(ZonedDateTime.now().plusDays(7));
+    token.setRefreshToken(allTokenConext.refreshToken);
+    token.setExpiresAt(DateUtil.fromMillisecondWithDefaultZone(allTokenConext.refreshTokenExpiredAt));
     adminTokenRepository.save(token);
 
-    return new AdminTokenRefreshResponseDTO(newAccessToken, newRefreshToken);
-  }
-
-  public Admin findByIdOrExcept(String id) {
-    return adminRepository.findById(UUID.fromString(id))
-        .orElseThrow(() -> new UsernameNotFoundException("invalid token"));
-  }
-
-  @Override
-  @Cacheable(value = "AdminDetails", key = "#p0")
-  public UserDetails loadUserByUsername(String id) throws UsernameNotFoundException {
-    return new AdminUserDetails(AdminUserContext.fromEntity(findByIdOrExcept(id)));
+    return new AdminTokenRefreshResponseDTO(allTokenConext.accessToken, allTokenConext.refreshToken);
   }
 
 }

@@ -1,5 +1,6 @@
 package com.smartstore.api.v1.common.utils.date;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -8,8 +9,8 @@ import java.time.format.DateTimeFormatter;
 import com.smartstore.api.v1.common.constants.message.CommonMessage;
 
 public class DateUtil {
-  private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-  private static final ZoneId defaultZone = ZoneId.of("Asia/Seoul");
+  public static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+  public static final ZoneId defaultZone = ZoneId.of("Asia/Seoul");
 
   private DateUtil() {
     throw new UnsupportedOperationException(CommonMessage.CANNOT_INITIALIZE_UTIL_CLASS_MSG);
@@ -48,5 +49,9 @@ public class DateUtil {
       return null;
     }
     return dateTime.withZoneSameInstant(defaultZone).format(FORMATTER);
+  }
+
+  public static ZonedDateTime fromMillisecondWithDefaultZone(long millescond) {
+    return Instant.ofEpochMilli(millescond).atZone(defaultZone);
   }
 }

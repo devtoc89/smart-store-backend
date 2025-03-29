@@ -35,23 +35,38 @@ public class AdminJwtProvider {
     key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
   }
 
+  public long getAccessTokenValidity() {
+    return accessTokenValidity;
+  }
+
+  public long getRefreshTokenValidity() {
+    return refreshTokenValidity;
+  }
+
   public String generateToken(String subject, Role role) {
+    return generateAccessToken(subject, role, System.currentTimeMillis() + accessTokenValidity);
+  }
+
+  public String generateRefreshToken(String subject) {
+    return generateRefreshToken(subject, System.currentTimeMillis() + refreshTokenValidity);
+  }
+
+  public String generateAccessToken(String subject, Role role, long accessTokenExpired) {
     return Jwts.builder()
         .setSubject(subject)
         .claim("role", role.name())
         .setIssuedAt(new Date())
-        .setExpiration(new Date(System.currentTimeMillis() + accessTokenValidity))
+        .setExpiration(new Date(accessTokenExpired))
         .signWith(key, SignatureAlgorithm.HS256)
         .compact();
   }
 
-  public String generateRefreshToken(String subject) {
-
+  public String generateRefreshToken(String subject, long refreshTokenExpired) {
     return Jwts.builder()
         .setSubject(subject)
         .claim("type", "refresh")
         .setIssuedAt(new Date())
-        .setExpiration(new Date(System.currentTimeMillis() + refreshTokenValidity))
+        .setExpiration(new Date(refreshTokenExpired))
         .signWith(key, SignatureAlgorithm.HS256)
         .compact();
   }
