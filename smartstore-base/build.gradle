@@ -7,6 +7,8 @@ plugins {
 group = 'com.api.smartstore'
 version = '0.0.1-SNAPSHOT'
 
+
+
 java {
 	toolchain {
 		languageVersion = JavaLanguageVersion.of(21)
@@ -23,9 +25,9 @@ repositories {
 	mavenCentral()
 }
 
-ext {
-	set('springModulithVersion', "1.3.3")
-}
+// ext {
+// 	set('springModulithVersion', "1.3.3")
+// }
 
 dependencies {
 
@@ -35,8 +37,8 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
   implementation 'org.springframework.boot:spring-boot-starter-actuator'
-  implementation 'org.springframework.modulith:spring-modulith-starter-core'
-	implementation 'org.springframework.modulith:spring-modulith-starter-jpa'
+  // implementation 'org.springframework.modulith:spring-modulith-starter-core'
+	// implementation 'org.springframework.modulith:spring-modulith-starter-jpa'
 	
   // cache
   implementation 'org.springframework.boot:spring-boot-starter-cache'
@@ -54,6 +56,12 @@ dependencies {
 
   // db
   runtimeOnly 'org.postgresql:postgresql'
+	// QueryDsl
+	implementation 'com.querydsl:querydsl-jpa:5.1.0:jakarta'
+	annotationProcessor "com.querydsl:querydsl-apt:${dependencyManagement.importedProperties['querydsl.version']}:jakarta"
+	annotationProcessor "jakarta.annotation:jakarta.annotation-api"
+	annotationProcessor "jakarta.persistence:jakarta.persistence-api"
+  // implementation 'org.flywaydb:flyway-core'
   
   // devtool
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
@@ -72,54 +80,71 @@ dependencies {
 	
   // test
   testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testImplementation 'org.springframework.modulith:spring-modulith-starter-test'
+	// testImplementation 'org.springframework.modulith:spring-modulith-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
   testImplementation 'net.bytebuddy:byte-buddy-agent:1.15.5'
   testImplementation 'org.mockito:mockito-core:5.14.2'
 
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-
 }
 
-dependencyManagement {
-	imports {
-		mavenBom "org.springframework.modulith:spring-modulith-bom:${springModulithVersion}"
-	}
+// dependencyManagement {
+// 	imports {
+// 		mavenBom "org.springframework.modulith:spring-modulith-bom:${springModulithVersion}"
+// 	}
+// }
+
+clean {
+	delete file("$buildDir/generated/querydsl")
+}
+
+def generated = "$buildDir/generated/querydsl"
+
+sourceSets {
+    main {
+        java {
+            srcDir generated
+        }
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.annotationProcessorGeneratedSourcesDirectory = file(generated)
 }
 
 tasks.named('test') {
 	useJUnitPlatform()
 }
 
-test {
-    doFirst {
-        def byteBuddyAgentJar = configurations.testRuntimeClasspath.find { 
-            it.name.startsWith('byte-buddy-agent') && it.name.endsWith('.jar')
-        }
-        def mockitoCoreJar = configurations.testRuntimeClasspath.find { 
-            it.name.startsWith('mockito-core') && it.name.endsWith('.jar')
-        }
-        println "Byte Buddy Agent jar: " + (byteBuddyAgentJar ? byteBuddyAgentJar.absolutePath : "Not found")
-        println "Mockito Core jar: " + (mockitoCoreJar ? mockitoCoreJar.absolutePath : "Not found")
-    }
+// test {
+//     doFirst {
+//         def byteBuddyAgentJar = configurations.testRuntimeClasspath.find { 
+//             it.name.startsWith('byte-buddy-agent') && it.name.endsWith('.jar')
+//         }
+//         def mockitoCoreJar = configurations.testRuntimeClasspath.find { 
+//             it.name.startsWith('mockito-core') && it.name.endsWith('.jar')
+//         }
+//         println "Byte Buddy Agent jar: " + (byteBuddyAgentJar ? byteBuddyAgentJar.absolutePath : "Not found")
+//         println "Mockito Core jar: " + (mockitoCoreJar ? mockitoCoreJar.absolutePath : "Not found")
+//     }
 
-    jvmArgs '-Xshare:off'
+//     jvmArgs '-Xshare:off'
 
-    def byteBuddyAgentJar = configurations.testRuntimeClasspath.find { 
-        it.name.startsWith('byte-buddy-agent') && it.name.endsWith('.jar')
-    }
-    if (byteBuddyAgentJar != null) {
-        jvmArgs "-javaagent:${byteBuddyAgentJar.absolutePath}"
-    } else {
-        logger.warn("Byte Buddy Agent jar not found in testRuntimeClasspath!")
-    }
+//     def byteBuddyAgentJar = configurations.testRuntimeClasspath.find { 
+//         it.name.startsWith('byte-buddy-agent') && it.name.endsWith('.jar')
+//     }
+//     if (byteBuddyAgentJar != null) {
+//         jvmArgs "-javaagent:${byteBuddyAgentJar.absolutePath}"
+//     } else {
+//         logger.warn("Byte Buddy Agent jar not found in testRuntimeClasspath!")
+//     }
 
-    def mockitoCoreJar = configurations.testRuntimeClasspath.find { 
-        it.name.startsWith('mockito-core') && it.name.endsWith('.jar')
-    }
-    if (mockitoCoreJar != null) {
-        jvmArgs "-javaagent:${mockitoCoreJar.absolutePath}"
-    } else {
-        logger.warn("Mockito Core jar not found in testRuntimeClasspath!")
-    }
-}
+//     def mockitoCoreJar = configurations.testRuntimeClasspath.find { 
+//         it.name.startsWith('mockito-core') && it.name.endsWith('.jar')
+//     }
+//     if (mockitoCoreJar != null) {
+//         jvmArgs "-javaagent:${mockitoCoreJar.absolutePath}"
+//     } else {
+//         logger.warn("Mockito Core jar not found in testRuntimeClasspath!")
+//     }
+// }
