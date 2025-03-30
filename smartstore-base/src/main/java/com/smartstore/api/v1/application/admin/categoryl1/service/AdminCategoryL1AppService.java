@@ -29,7 +29,7 @@ public class AdminCategoryL1AppService {
   }
 
   @Transactional(readOnly = true)
-  public Page<AdminCategoryL1ResponseDTO> getCategoryL1sByFilterWithPaging(
+  public Page<AdminCategoryL1ResponseDTO> getList(
       AdminCategoryL1FilterRequestDTO searchRequest, Pageable pageable) {
     return AdminCategoryL1ResponseDTO.fromVOWithPage(
         categoryL1Service.findManyByCondition(
@@ -37,14 +37,14 @@ public class AdminCategoryL1AppService {
   }
 
   @Transactional
-  public AdminCategoryL1ResponseDTO postCategoryL1(
+  public AdminCategoryL1ResponseDTO post(
       AdminCategoryL1PostRequestDTO postRequestDTO) {
     var id = UUID.randomUUID();
     return AdminCategoryL1ResponseDTO.fromVO(categoryL1Service.create(id, postRequestDTO.toVO()));
   }
 
   @Transactional
-  public AdminCategoryL1ResponseDTO putCategoryL1(String id,
+  public AdminCategoryL1ResponseDTO put(String id,
       AdminCategoryL1PutRequestDTO putRequestDTO) {
     return AdminCategoryL1ResponseDTO.fromVO(
         categoryL1Service.replace(
@@ -52,7 +52,7 @@ public class AdminCategoryL1AppService {
   }
 
   @Transactional
-  public AdminCategoryL1ResponseDTO patchCategoryL1(String id,
+  public AdminCategoryL1ResponseDTO patch(String id,
       AdminCategoryL1PatchRequestDTO putRequestDTO) {
     return AdminCategoryL1ResponseDTO.fromVO(
         categoryL1Service.modify(
@@ -60,7 +60,7 @@ public class AdminCategoryL1AppService {
   }
 
   @Transactional
-  public AdminCategoryL1ResponseDTO deleteCategoryL1(String id) {
+  public AdminCategoryL1ResponseDTO delete(String id) {
     return AdminCategoryL1ResponseDTO.fromVO(
         categoryL1Service.delete(
             UUID.fromString(id)));

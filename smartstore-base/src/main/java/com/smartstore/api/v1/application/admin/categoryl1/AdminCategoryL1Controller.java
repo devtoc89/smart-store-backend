@@ -65,7 +65,7 @@ public class AdminCategoryL1Controller {
   public ResponseEntity<ResponseWrapper<Page<AdminCategoryL1ResponseDTO>>> searchCategoryL1s(
       @ModelAttribute @Valid AdminCategoryL1FilterRequestDTO searchRequest,
       @PageableDefault(size = 20, sort = "orderBy", direction = Sort.Direction.ASC) Pageable pageable) {
-    Page<AdminCategoryL1ResponseDTO> result = adminCategoryL1AppService.getCategoryL1sByFilterWithPaging(searchRequest,
+    Page<AdminCategoryL1ResponseDTO> result = adminCategoryL1AppService.getList(searchRequest,
         pageable);
     return ResponseEntity.ok(ResponseWrapper.success(result));
   }
@@ -76,7 +76,7 @@ public class AdminCategoryL1Controller {
   @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content(schema = @Schema(implementation = CustomErrorResponseDTO.class)))
   public ResponseEntity<ResponseWrapper<AdminCategoryL1ResponseDTO>> postCategoryL1(
       @RequestBody @Valid AdminCategoryL1PostRequestDTO requestDTO) {
-    AdminCategoryL1ResponseDTO result = adminCategoryL1AppService.postCategoryL1(requestDTO);
+    AdminCategoryL1ResponseDTO result = adminCategoryL1AppService.post(requestDTO);
     URI location = URI.create(Config.BASE_URL + "/" + result.getId());
     return ResponseEntity.created(location).body(ResponseWrapper.success(result));
   }
@@ -100,7 +100,7 @@ public class AdminCategoryL1Controller {
   public ResponseEntity<ResponseWrapper<AdminCategoryL1ResponseDTO>> putCategoryL1(
       @PathVariable("id") @NotBlank(message = "id는 필수항목입니다.") @UUID(message = "id는 UUID 형식이어야 합니다.") String id,
       @RequestBody @Valid AdminCategoryL1PutRequestDTO requestDTO) {
-    AdminCategoryL1ResponseDTO result = adminCategoryL1AppService.putCategoryL1(id, requestDTO);
+    AdminCategoryL1ResponseDTO result = adminCategoryL1AppService.put(id, requestDTO);
     return ResponseEntity.ok(ResponseWrapper.success(result));
   }
 
@@ -112,7 +112,7 @@ public class AdminCategoryL1Controller {
   public ResponseEntity<ResponseWrapper<AdminCategoryL1ResponseDTO>> patchCategoryL1(
       @PathVariable("id") @NotBlank(message = "id는 필수항목입니다.") @UUID(message = "id는 UUID 형식이어야 합니다.") String id,
       @RequestBody @Valid AdminCategoryL1PatchRequestDTO requestDTO) {
-    AdminCategoryL1ResponseDTO result = adminCategoryL1AppService.patchCategoryL1(id, requestDTO);
+    AdminCategoryL1ResponseDTO result = adminCategoryL1AppService.patch(id, requestDTO);
     return ResponseEntity.ok(ResponseWrapper.success(result));
   }
 
@@ -123,7 +123,7 @@ public class AdminCategoryL1Controller {
   @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content(schema = @Schema(implementation = CustomErrorResponseDTO.class)))
   public ResponseEntity<ResponseWrapper<AdminCategoryL1ResponseDTO>> deleteCategoryL1(
       @PathVariable("id") @NotBlank(message = "id는 필수항목입니다.") @UUID(message = "id는 UUID 형식이어야 합니다.") String id) {
-    AdminCategoryL1ResponseDTO result = adminCategoryL1AppService.deleteCategoryL1(id);
+    AdminCategoryL1ResponseDTO result = adminCategoryL1AppService.delete(id);
     return ResponseEntity.ok(ResponseWrapper.success(result));
   }
 }
