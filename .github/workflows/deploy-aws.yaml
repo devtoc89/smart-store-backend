@@ -62,6 +62,9 @@ jobs:
               -e "s|__CLOUDFRONT_URL__|${{ secrets.CLOUDFRONT_URL }}|g" \
               -e "s|__JWT_SECRET__|${{ secrets.JWT_SECRET }}|g" \
               -e "s|__APP_CORS__|${{ secrets.APP_CORS }}|g" \
+              -e "s|__SUPER_USER_MAIL__|${{ secrets.SUPER_USER_MAIL }}|g" \
+              -e "s|__SUPER_USER_PASSWORD__|${{ secrets.SUPER_USER_PASSWORD }}|g" \
+              -e "s|__SUPER_USER_NICKNAME__|${{ secrets.SUPER_USER_NICKNAME }}|g" \
               .github/ecs-task-definition.json.template > rendered-task-def.json
 
       # 8. ECS에 배포

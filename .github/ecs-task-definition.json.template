@@ -67,6 +67,18 @@
         {
           "name": "APP_CORS",
           "value": "__APP_CORS__"
+        },
+        {
+          "name": "SUPER_USER_MAIL",
+          "value": "__SUPER_USER_MAIL__"
+        },
+        {
+          "name": "SUPER_USER_PASSWORD",
+          "value": "__SUPER_USER_PASSWORD__"
+        },
+        {
+          "name": "SUPER_USER_NICKNAME",
+          "value": "__SUPER_USER_NICKNAME__"
         }
       ]
     }
