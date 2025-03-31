@@ -7,7 +7,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: create-drop    # 스키마 자동 생성 전략 
+      ddl-auto: none     # 스키마 자동 생성 전략 
     show-sql: true        # 실행되는 SQL 출력 (디버깅용)
     properties:
       hibernate:
@@ -15,9 +15,11 @@ spring:
         highlight_sql: true    #  SQL 하이라이트 활성화
         use_sql_comments: true  #  SQL 주석 활성화
         hbm2ddl: 
-          auto: create-drop
-          import_files_sql_extractor:
-            org.hibernate.tool.schema.internal.script.MultiLineSqlScriptExtractor
+          auto: none 
+        jdbc:
+          generate_statistics: true
+  flyway:
+    locations: "classpath:local/db"
 
   devtools:
     livereload:

@@ -24,11 +24,13 @@ spring:
       maximum-pool-size: 20      # 최대 커넥션 개수
       idle-timeout: 30000        # 30초 동안 미사용 시 커넥션 제거
   jpa:
+    defer-datasource-initialization: false
     hibernate:
-      ddl-auto: validate  # 운영에서는 update 사용 금지, validate 권장
+      ddl-auto: none  # 운영에서는 update 사용 금지, validate 권장
     show-sql: false
     properties:
       hibernate:
+        # dialect: org.hibernate.dialect.PostgreSQLDialect
         hbm2ddl: 
           auto: none
         jdbc:
@@ -36,6 +38,13 @@ spring:
           order_inserts: true  # INSERT 쿼리 최적화
           order_updates: true  # UPDATE 쿼리 최적화
     open-in-view: false   # Open-Session-In-View 패턴 비활성화 
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    url: ${DB_URL}
+    user: ${DB_USER}
+    password: ${DB_PASS}    
+    locations: "classpath:prd/db"
   threads:
     virtual:
       enabled: true
