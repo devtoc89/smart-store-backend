@@ -23,7 +23,7 @@ public class CategoryL1Service {
 
   private final CategoryL1Repository categoryL1Repository;
 
-  private CategoryL1 applyCreate(UUID id, CategoryL1VO vo) {
+  public CategoryL1 applyCreate(UUID id, CategoryL1VO vo) {
     return CategoryL1.builder()
         .id(id)
         .name(vo.getName())
@@ -31,13 +31,13 @@ public class CategoryL1Service {
         .build();
   }
 
-  private CategoryL1 applyUpdate(CategoryL1 entity, CategoryL1VO vo) {
+  public CategoryL1 applyUpdate(CategoryL1 entity, CategoryL1VO vo) {
     entity.setName(vo.getName());
     entity.setOrderBy(vo.getOrderBy());
     return entity;
   }
 
-  private CategoryL1 applyPartialUpdate(CategoryL1 entity, CategoryL1VO vo) {
+  public CategoryL1 applyPartialUpdate(CategoryL1 entity, CategoryL1VO vo) {
     if (!ObjectUtils.isEmpty(vo.getName())) {
       entity.setName(vo.getName());
     }
@@ -45,6 +45,16 @@ public class CategoryL1Service {
       entity.setOrderBy(vo.getOrderBy());
     }
     return entity;
+  }
+
+  public boolean isNotModified(CategoryL1 entity, CategoryL1VO vo) {
+    if (!ObjectUtils.nullSafeEquals(entity.getName(), vo.getName())) {
+      return false;
+    }
+    if (!ObjectUtils.nullSafeEquals(entity.getOrderBy(), vo.getOrderBy())) {
+      return false;
+    }
+    return true;
   }
 
   private CategoryL1 findByIdOrExcept(UUID id) {
@@ -92,4 +102,5 @@ public class CategoryL1Service {
 
     return CategoryL1VO.fromEntity(categoryL1Repository.save(entity));
   }
+
 }

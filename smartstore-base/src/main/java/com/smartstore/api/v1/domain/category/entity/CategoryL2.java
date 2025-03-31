@@ -23,7 +23,7 @@ import lombok.experimental.SuperBuilder;
 @Setter
 @NoArgsConstructor
 @SuperBuilder
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true, exclude = "subCategories")
 @Entity
 @Table(name = "category_l2")
 public class CategoryL2 extends BaseEntity {

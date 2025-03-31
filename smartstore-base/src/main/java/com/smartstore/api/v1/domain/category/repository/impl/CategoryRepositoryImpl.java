@@ -28,7 +28,7 @@ public class CategoryRepositoryImpl implements CategoryRepositoryQuerydsl {
 
   private final JPAQueryFactory query;
 
-  public List<CategoryL1> fetchCategoryTree() {
+  public List<CategoryL1> fetchCategoryTree(boolean needSort) {
     QCategoryL1 l1 = QCategoryL1.categoryL1;
     QCategoryL2 l2 = QCategoryL2.categoryL2;
     QCategoryNode node = QCategoryNode.categoryNode;
@@ -38,21 +38,27 @@ public class CategoryRepositoryImpl implements CategoryRepositoryQuerydsl {
         .from(l1)
         .leftJoin(l1.subCategories, l2)
         .leftJoin(l2.subCategories, node)
+        .where(
+            l1.isDeleted.eq(false),
+            l2.isDeleted.eq(false),
+            node.isDeleted.eq(false))
         .fetch();
 
-    results.sort(Comparator
-        .comparing((Tuple t) -> t.get(QCategoryL1.categoryL1.orderBy),
-            Comparator.nullsLast(Integer::compareTo))
-        .thenComparing((Tuple t) -> t.get(QCategoryL1.categoryL1.createdAt),
-            Comparator.nullsLast(ZonedDateTime::compareTo))
-        .thenComparing((Tuple t) -> t.get(QCategoryL2.categoryL2.orderBy),
-            Comparator.nullsLast(Integer::compareTo))
-        .thenComparing((Tuple t) -> t.get(QCategoryL2.categoryL2.createdAt),
-            Comparator.nullsLast(ZonedDateTime::compareTo))
-        .thenComparing((Tuple t) -> t.get(QCategoryNode.categoryNode.orderBy),
-            Comparator.nullsLast(Integer::compareTo))
-        .thenComparing((Tuple t) -> t.get(QCategoryNode.categoryNode.createdAt),
-            Comparator.nullsLast(ZonedDateTime::compareTo)));
+    if (needSort) {
+      results.sort(Comparator
+          .comparing((Tuple t) -> t.get(QCategoryL1.categoryL1.orderBy),
+              Comparator.nullsLast(Integer::compareTo))
+          .thenComparing((Tuple t) -> t.get(QCategoryL1.categoryL1.createdAt),
+              Comparator.nullsLast(ZonedDateTime::compareTo))
+          .thenComparing((Tuple t) -> t.get(QCategoryL2.categoryL2.orderBy),
+              Comparator.nullsLast(Integer::compareTo))
+          .thenComparing((Tuple t) -> t.get(QCategoryL2.categoryL2.createdAt),
+              Comparator.nullsLast(ZonedDateTime::compareTo))
+          .thenComparing((Tuple t) -> t.get(QCategoryNode.categoryNode.orderBy),
+              Comparator.nullsLast(Integer::compareTo))
+          .thenComparing((Tuple t) -> t.get(QCategoryNode.categoryNode.createdAt),
+              Comparator.nullsLast(ZonedDateTime::compareTo)));
+    }
 
     // 결과 재조립 (중복 제거 + 트리 구성)
     Map<UUID, CategoryL1> l1Map = new LinkedHashMap<>();

@@ -19,7 +19,7 @@ import lombok.experimental.SuperBuilder;
 @Setter
 @NoArgsConstructor
 @SuperBuilder
-@EqualsAndHashCode
+@EqualsAndHashCode(exclude = { "createdAt", "updatedAt", "deletedAt" })
 public abstract class BaseEntity {
 
   @Id

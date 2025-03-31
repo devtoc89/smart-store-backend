@@ -29,7 +29,7 @@ public class CategoryNodeService {
 
   private final CategoryNodeRepository categoryNodeRepository;
 
-  private CategoryNode applyCreate(UUID id, CategoryNodeVO vo) {
+  public CategoryNode applyCreate(UUID id, CategoryNodeVO vo) {
     return CategoryNode.builder()
         .id(id)
         .name(vo.getName())
@@ -38,14 +38,25 @@ public class CategoryNodeService {
         .build();
   }
 
-  private CategoryNode applyUpdate(CategoryNode entity, CategoryNodeVO vo) {
+  public CategoryNode applyUpdate(CategoryNode entity, CategoryNodeVO vo) {
     entity.setName(vo.getName());
     entity.setOrderBy(vo.getOrderBy());
     entity.setCategoryL2(entityManager.getReference(CategoryL2.class, vo.getCategoryL2Id()));
     return entity;
   }
 
-  private CategoryNode applyPartialUpdate(CategoryNode entity, CategoryNodeVO vo) {
+  public boolean isNotModified(CategoryNode entity, CategoryNodeVO vo) {
+    if (!ObjectUtils.nullSafeEquals(entity.getName(), vo.getName())) {
+      return false;
+    }
+    if (!ObjectUtils.nullSafeEquals(entity.getOrderBy(), vo.getOrderBy())) {
+      return false;
+    }
+
+    return true;
+  }
+
+  public CategoryNode applyPartialUpdate(CategoryNode entity, CategoryNodeVO vo) {
     if (!ObjectUtils.isEmpty(vo.getName())) {
       entity.setName(vo.getName());
     }

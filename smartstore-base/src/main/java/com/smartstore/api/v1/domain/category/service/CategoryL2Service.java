@@ -29,7 +29,7 @@ public class CategoryL2Service {
 
   private final CategoryL2Repository categoryL2Repository;
 
-  private CategoryL2 applyCreate(UUID id, CategoryL2VO vo) {
+  public CategoryL2 applyCreate(UUID id, CategoryL2VO vo) {
     return CategoryL2.builder()
         .id(id)
         .name(vo.getName())
@@ -38,14 +38,14 @@ public class CategoryL2Service {
         .build();
   }
 
-  private CategoryL2 applyUpdate(CategoryL2 entity, CategoryL2VO vo) {
+  public CategoryL2 applyUpdate(CategoryL2 entity, CategoryL2VO vo) {
     entity.setName(vo.getName());
     entity.setOrderBy(vo.getOrderBy());
     entity.setCategoryL1(entityManager.getReference(CategoryL1.class, vo.getCategoryL1Id()));
     return entity;
   }
 
-  private CategoryL2 applyPartialUpdate(CategoryL2 entity, CategoryL2VO vo) {
+  public CategoryL2 applyPartialUpdate(CategoryL2 entity, CategoryL2VO vo) {
     if (!ObjectUtils.isEmpty(vo.getName())) {
       entity.setName(vo.getName());
     }
@@ -56,6 +56,17 @@ public class CategoryL2Service {
       entity.setCategoryL1(entityManager.getReference(CategoryL1.class, vo.getCategoryL1Id()));
     }
     return entity;
+  }
+
+  public boolean isNotModified(CategoryL2 entity, CategoryL2VO vo) {
+    if (!ObjectUtils.nullSafeEquals(entity.getName(), vo.getName())) {
+      return false;
+    }
+    if (!ObjectUtils.nullSafeEquals(entity.getOrderBy(), vo.getOrderBy())) {
+      return false;
+    }
+
+    return true;
   }
 
   private CategoryL2 findByIdOrExcept(UUID id) {

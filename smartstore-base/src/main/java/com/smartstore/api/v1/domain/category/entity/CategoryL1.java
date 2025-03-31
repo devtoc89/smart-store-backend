@@ -20,7 +20,7 @@ import lombok.experimental.SuperBuilder;
 @Getter
 @Setter
 @NoArgsConstructor
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true, exclude = "subCategories")
 @SuperBuilder
 @Entity
 @Table(name = "category_l1")
