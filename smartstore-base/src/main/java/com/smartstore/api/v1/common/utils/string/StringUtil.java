@@ -2,6 +2,8 @@ package com.smartstore.api.v1.common.utils.string;
 
 import java.util.UUID;
 
+import org.apache.commons.lang3.ObjectUtils;
+
 import com.smartstore.api.v1.common.constants.message.CommonMessage;
 
 public class StringUtil extends org.springframework.util.StringUtils {
@@ -12,15 +14,15 @@ public class StringUtil extends org.springframework.util.StringUtils {
 
   public static UUID stringToUUIDOrNew(String uuidStr) {
     try {
-      return uuidStr == null ? UUID.randomUUID() : UUID.fromString(uuidStr);
+      return ObjectUtils.isEmpty(uuidStr) ? UUID.randomUUID() : UUID.fromString(uuidStr);
     } catch (IllegalArgumentException e) {
-      return null;
+      throw new IllegalArgumentException("유효하지 않은 UUID 형식입니다: " + uuidStr);
     }
   }
 
   public static UUID stringToUUID(String uuidStr) {
     try {
-      return uuidStr == null ? null : UUID.fromString(uuidStr);
+      return ObjectUtils.isEmpty(uuidStr) ? null : UUID.fromString(uuidStr);
     } catch (IllegalArgumentException e) {
       return null;
     }
