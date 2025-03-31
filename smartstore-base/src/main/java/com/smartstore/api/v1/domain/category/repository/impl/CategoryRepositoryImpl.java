@@ -46,18 +46,18 @@ public class CategoryRepositoryImpl implements CategoryRepositoryQuerydsl {
 
     if (needSort) {
       results.sort(Comparator
-          .comparing((Tuple t) -> t.get(QCategoryL1.categoryL1.orderBy),
-              Comparator.nullsLast(Integer::compareTo))
-          .thenComparing((Tuple t) -> t.get(QCategoryL1.categoryL1.createdAt),
-              Comparator.nullsLast(ZonedDateTime::compareTo))
-          .thenComparing((Tuple t) -> t.get(QCategoryL2.categoryL2.orderBy),
-              Comparator.nullsLast(Integer::compareTo))
-          .thenComparing((Tuple t) -> t.get(QCategoryL2.categoryL2.createdAt),
+          .comparing((Tuple t) -> t.get(QCategoryNode.categoryNode.createdAt),
               Comparator.nullsLast(ZonedDateTime::compareTo))
           .thenComparing((Tuple t) -> t.get(QCategoryNode.categoryNode.orderBy),
               Comparator.nullsLast(Integer::compareTo))
-          .thenComparing((Tuple t) -> t.get(QCategoryNode.categoryNode.createdAt),
-              Comparator.nullsLast(ZonedDateTime::compareTo)));
+          .thenComparing((Tuple t) -> t.get(QCategoryL2.categoryL2.createdAt),
+              Comparator.nullsLast(ZonedDateTime::compareTo))
+          .thenComparing((Tuple t) -> t.get(QCategoryL2.categoryL2.orderBy),
+              Comparator.nullsLast(Integer::compareTo))
+          .thenComparing((Tuple t) -> t.get(QCategoryL1.categoryL1.createdAt),
+              Comparator.nullsLast(ZonedDateTime::compareTo))
+          .thenComparing((Tuple t) -> t.get(QCategoryL1.categoryL1.orderBy),
+              Comparator.nullsLast(Integer::compareTo)));
     }
 
     // 결과 재조립 (중복 제거 + 트리 구성)

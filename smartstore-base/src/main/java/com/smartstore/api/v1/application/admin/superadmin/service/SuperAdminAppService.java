@@ -18,7 +18,9 @@ import com.smartstore.api.v1.domain.admin.service.AdminDomainService;
 
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 
+@Log4j2
 @Service
 @RequiredArgsConstructor
 public class SuperAdminAppService {
@@ -59,8 +61,13 @@ public class SuperAdminAppService {
 
   @PostConstruct
   private void initSuperAdmin() {
-    if (hasSuperAdminConfig() && !adminDomainService.existsByRole(Role.SUPER_ADMIN)) {
-      adminDomainService.save(generateSuperAdminEntity());
+    try {
+
+      if (hasSuperAdminConfig() && !adminDomainService.existsByRole(Role.SUPER_ADMIN)) {
+        adminDomainService.save(generateSuperAdminEntity());
+      }
+    } catch (Exception e) {
+      log.info("슈퍼유저 등록 실패");
     }
   }
 
