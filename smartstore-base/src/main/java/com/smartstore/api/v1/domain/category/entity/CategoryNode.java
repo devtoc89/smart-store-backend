@@ -12,6 +12,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
 @Getter
@@ -19,6 +20,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @SuperBuilder
 @EqualsAndHashCode(callSuper = true)
+@ToString(onlyExplicitlyIncluded = true, callSuper = true)
 @Entity
 @Table(name = "category_node")
 public class CategoryNode extends BaseEntity {
@@ -30,6 +32,7 @@ public class CategoryNode extends BaseEntity {
   @JoinColumn(name = "category_l2_id", nullable = false)
   private CategoryL2 categoryL2;
 
+  @ToString.Include
   @Builder.Default
   @Column(nullable = false)
   private Integer orderBy = -1;

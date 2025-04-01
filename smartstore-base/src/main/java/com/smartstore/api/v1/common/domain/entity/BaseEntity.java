@@ -12,6 +12,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
 @MappedSuperclass
@@ -19,9 +20,11 @@ import lombok.experimental.SuperBuilder;
 @Setter
 @NoArgsConstructor
 @SuperBuilder
+@ToString(onlyExplicitlyIncluded = true)
 @EqualsAndHashCode(exclude = { "createdAt", "updatedAt", "deletedAt" })
 public abstract class BaseEntity {
 
+  @ToString.Include
   @Id
   @Column(updatable = false, nullable = false) // 기본 키는 변경할 수 없음
   private UUID id;
@@ -29,6 +32,7 @@ public abstract class BaseEntity {
   @Column(nullable = false)
   private Boolean isDeleted; // 기본값 false
 
+  @ToString.Include
   @Column(updatable = false) // 최초 생성 시 설정, 이후 변경 방지
   private ZonedDateTime createdAt;
 

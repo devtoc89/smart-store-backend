@@ -15,6 +15,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
 @Getter
@@ -23,6 +24,7 @@ import lombok.experimental.SuperBuilder;
 @EqualsAndHashCode(callSuper = true, exclude = "subCategories")
 @SuperBuilder
 @Entity
+@ToString(onlyExplicitlyIncluded = true, callSuper = true)
 @Table(name = "category_l1")
 public class CategoryL1 extends BaseEntity {
   @Column(nullable = false)
@@ -32,6 +34,7 @@ public class CategoryL1 extends BaseEntity {
   @OneToMany(mappedBy = "categoryL1", cascade = CascadeType.ALL)
   private List<CategoryL2> subCategories = new ArrayList<>();
 
+  @ToString.Include
   @Builder.Default
   @Column(nullable = false)
   private Integer orderBy = -1;
