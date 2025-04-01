@@ -7,8 +7,6 @@ plugins {
 group = 'com.api.smartstore'
 version = '0.0.1-SNAPSHOT'
 
-
-
 java {
 	toolchain {
 		languageVersion = JavaLanguageVersion.of(21)
@@ -25,23 +23,57 @@ repositories {
 	mavenCentral()
 }
 
+// dependencyManagement {
+// 	imports {
+// 		mavenBom "org.springframework.modulith:spring-modulith-bom:${springModulithVersion}"
+// 	}
+// }
+
 // ext {
 // 	set('springModulithVersion', "1.3.3")
 // }
 
+
 dependencies {
 
   // spring
+  // spring validation
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+  // spring jpa
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+  // spring security
 	implementation 'org.springframework.boot:spring-boot-starter-security'
+
+  // spring webserver
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+
+  // spring health
   implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+  // spring annotation
+  annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+
+  // spring modulith
   // implementation 'org.springframework.modulith:spring-modulith-starter-core'
 	// implementation 'org.springframework.modulith:spring-modulith-starter-jpa'
+
+  // spring cache
+   implementation 'org.springframework.boot:spring-boot-starter-cache'
+
+  // spring devtool
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+	developmentOnly 'org.springframework.boot:spring-boot-docker-compose'
+
+  // spring test
+  testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.security:spring-security-test'
+	// testImplementation 'org.springframework.modulith:spring-modulith-starter-test'
+
+  //\ spring
 	
   // cache
-  implementation 'org.springframework.boot:spring-boot-starter-cache'
   implementation 'com.github.ben-manes.caffeine:caffeine:3.2.0'
 
   // aws
@@ -54,48 +86,36 @@ dependencies {
   runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
   runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5' // ← JSON 직렬화용
 
-  // db
-  runtimeOnly 'org.postgresql:postgresql'
 	// QueryDsl
 	implementation 'com.querydsl:querydsl-jpa:5.1.0:jakarta'
 	annotationProcessor "com.querydsl:querydsl-apt:${dependencyManagement.importedProperties['querydsl.version']}:jakarta"
+
+  // jakarta api
 	annotationProcessor "jakarta.annotation:jakarta.annotation-api"
 	annotationProcessor "jakarta.persistence:jakarta.persistence-api"
 
+  // db
+  runtimeOnly 'org.postgresql:postgresql'
+
   // flyway
+  implementation 'org.flywaydb:flyway-core'
   implementation 'org.flywaydb:flyway-database-postgresql:11.3.4'
-  
-  // devtool
-	developmentOnly 'org.springframework.boot:spring-boot-devtools'
-	developmentOnly 'org.springframework.boot:spring-boot-docker-compose'
  
   // swagger
   implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.5'
 	
   // lombok
   compileOnly 'org.projectlombok:lombok'
-
-	
-  // annotation
-  annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 	annotationProcessor 'org.projectlombok:lombok'
 	
   // test
-  testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	// testImplementation 'org.springframework.modulith:spring-modulith-starter-test'
-	testImplementation 'org.springframework.security:spring-security-test'
   testImplementation 'net.bytebuddy:byte-buddy-agent:1.15.5'
   testImplementation 'org.mockito:mockito-core:5.14.2'
-
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
-// dependencyManagement {
-// 	imports {
-// 		mavenBom "org.springframework.modulith:spring-modulith-bom:${springModulithVersion}"
-// 	}
-// }
-
+// job
+// querydsl job
 clean {
 	delete file("$buildDir/generated/querydsl")
 }
@@ -113,7 +133,9 @@ sourceSets {
 tasks.withType(JavaCompile).configureEach {
     options.annotationProcessorGeneratedSourcesDirectory = file(generated)
 }
+//\ querydsl job
 
+// hibernate ddl auto generate
 tasks.register("generateMigrationSql", JavaExec) {
     group = "migration"
     description = "Hibernate에서 자동으로 DDL SQL을 생성합니다."
@@ -121,40 +143,42 @@ tasks.register("generateMigrationSql", JavaExec) {
     mainClass = "com.smartstore.SmartStoreApplication" 
     args = ["generateMigrationSql"]
 }
+//\ hibernate ddl auto generate
 
+// test job
 tasks.named('test') {
 	useJUnitPlatform()
 }
 
-// test {
-//     doFirst {
-//         def byteBuddyAgentJar = configurations.testRuntimeClasspath.find { 
-//             it.name.startsWith('byte-buddy-agent') && it.name.endsWith('.jar')
-//         }
-//         def mockitoCoreJar = configurations.testRuntimeClasspath.find { 
-//             it.name.startsWith('mockito-core') && it.name.endsWith('.jar')
-//         }
-//         println "Byte Buddy Agent jar: " + (byteBuddyAgentJar ? byteBuddyAgentJar.absolutePath : "Not found")
-//         println "Mockito Core jar: " + (mockitoCoreJar ? mockitoCoreJar.absolutePath : "Not found")
-//     }
+test {
+    doFirst {
+        def byteBuddyAgentJar = configurations.testRuntimeClasspath.find { 
+            it.name.startsWith('byte-buddy-agent') && it.name.endsWith('.jar')
+        }
+        def mockitoCoreJar = configurations.testRuntimeClasspath.find { 
+            it.name.startsWith('mockito-core') && it.name.endsWith('.jar')
+        }
+        println "Byte Buddy Agent jar: " + (byteBuddyAgentJar ? byteBuddyAgentJar.absolutePath : "Not found")
+        println "Mockito Core jar: " + (mockitoCoreJar ? mockitoCoreJar.absolutePath : "Not found")
+    }
 
-//     jvmArgs '-Xshare:off'
+    jvmArgs '-Xshare:off'
 
-//     def byteBuddyAgentJar = configurations.testRuntimeClasspath.find { 
-//         it.name.startsWith('byte-buddy-agent') && it.name.endsWith('.jar')
-//     }
-//     if (byteBuddyAgentJar != null) {
-//         jvmArgs "-javaagent:${byteBuddyAgentJar.absolutePath}"
-//     } else {
-//         logger.warn("Byte Buddy Agent jar not found in testRuntimeClasspath!")
-//     }
+    def byteBuddyAgentJar = configurations.testRuntimeClasspath.find { 
+        it.name.startsWith('byte-buddy-agent') && it.name.endsWith('.jar')
+    }
+    if (byteBuddyAgentJar != null) {
+        jvmArgs "-javaagent:${byteBuddyAgentJar.absolutePath}"
+    } else {
+        logger.warn("Byte Buddy Agent jar not found in testRuntimeClasspath!")
+    }
 
-//     def mockitoCoreJar = configurations.testRuntimeClasspath.find { 
-//         it.name.startsWith('mockito-core') && it.name.endsWith('.jar')
-//     }
-//     if (mockitoCoreJar != null) {
-//         jvmArgs "-javaagent:${mockitoCoreJar.absolutePath}"
-//     } else {
-//         logger.warn("Mockito Core jar not found in testRuntimeClasspath!")
-//     }
-// }
+    def mockitoCoreJar = configurations.testRuntimeClasspath.find { 
+        it.name.startsWith('mockito-core') && it.name.endsWith('.jar')
+    }
+    if (mockitoCoreJar != null) {
+        jvmArgs "-javaagent:${mockitoCoreJar.absolutePath}"
+    } else {
+        logger.warn("Mockito Core jar not found in testRuntimeClasspath!")
+    }
+}
