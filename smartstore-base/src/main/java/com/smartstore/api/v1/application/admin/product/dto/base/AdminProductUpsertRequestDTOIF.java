@@ -5,8 +5,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 import com.smartstore.api.v1.application.admin.product.dto.AdminProductWithImageDTO;
-import com.smartstore.api.v1.common.domain.vo.BaseEntityVO;
 import com.smartstore.api.v1.common.utils.string.StringUtil;
+import com.smartstore.api.v1.domain.common.vo.BaseEntityVO;
 import com.smartstore.api.v1.domain.product.vo.ProductImageVO;
 import com.smartstore.api.v1.domain.product.vo.ProductVO;
 import com.smartstore.api.v1.domain.storedfile.vo.StoredFileVO;

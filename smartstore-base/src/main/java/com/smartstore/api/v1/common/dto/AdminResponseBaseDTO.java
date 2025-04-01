@@ -1,7 +1,7 @@
 package com.smartstore.api.v1.common.dto;
 
-import com.smartstore.api.v1.common.domain.vo.BaseEntityVO;
 import com.smartstore.api.v1.common.utils.date.DateUtil;
+import com.smartstore.api.v1.domain.common.vo.BaseEntityVO;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;

@@ -1,6 +1,6 @@
 package com.smartstore.api.v1.domain.category.entity;
 
-import com.smartstore.api.v1.common.domain.entity.BaseEntity;
+import com.smartstore.api.v1.domain.common.entity.BaseEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

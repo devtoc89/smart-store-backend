@@ -4,8 +4,8 @@ import java.util.UUID;
 
 import org.apache.commons.lang3.ObjectUtils;
 
-import com.smartstore.api.v1.common.domain.vo.BaseEntityVO;
 import com.smartstore.api.v1.common.utils.string.StringUtil;
+import com.smartstore.api.v1.domain.common.vo.BaseEntityVO;
 import com.smartstore.api.v1.domain.product.vo.ProductImageVO;
 import com.smartstore.api.v1.domain.storedfile.vo.StoredFileVO;
 

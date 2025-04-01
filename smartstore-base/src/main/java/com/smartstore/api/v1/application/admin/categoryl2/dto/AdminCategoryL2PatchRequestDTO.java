@@ -3,6 +3,7 @@ package com.smartstore.api.v1.application.admin.categoryl2.dto;
 import org.hibernate.validator.constraints.UUID;
 
 import com.smartstore.api.v1.application.admin.categoryl2.dto.base.AdminCategoryL2UpsertRequestDTOIF;
+import com.smartstore.api.v1.domain.category.validator.CategoryNameValid;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -20,6 +21,8 @@ import lombok.experimental.SuperBuilder;
 @EqualsAndHashCode
 @Schema(description = "2차 카테고리 일부 수정 DTO")
 public class AdminCategoryL2PatchRequestDTO implements AdminCategoryL2UpsertRequestDTOIF {
+
+  @CategoryNameValid
   @Schema(description = "카테고리명", example = "전자제품")
   private String name;
 

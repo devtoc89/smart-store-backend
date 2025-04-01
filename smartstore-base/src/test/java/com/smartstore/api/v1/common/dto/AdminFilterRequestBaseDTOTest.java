@@ -13,8 +13,8 @@ import org.junit.jupiter.api.Test;
 
 import com.smartstore.api.v1.application.admin.product.dto.AdminProductFilterRequestDTO;
 import com.smartstore.api.v1.common.constants.enums.ActiveStatus;
-import com.smartstore.api.v1.common.domain.vo.BaseFilterConditionVO;
 import com.smartstore.api.v1.common.utils.date.DateUtil;
+import com.smartstore.api.v1.domain.common.vo.BaseFilterConditionVO;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;

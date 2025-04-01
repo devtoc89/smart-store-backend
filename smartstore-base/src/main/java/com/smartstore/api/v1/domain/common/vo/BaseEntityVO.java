@@ -1,9 +1,9 @@
-package com.smartstore.api.v1.common.domain.vo;
+package com.smartstore.api.v1.domain.common.vo;
 
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
-import com.smartstore.api.v1.common.domain.entity.BaseEntity;
+import com.smartstore.api.v1.domain.common.entity.BaseEntity;
 
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;

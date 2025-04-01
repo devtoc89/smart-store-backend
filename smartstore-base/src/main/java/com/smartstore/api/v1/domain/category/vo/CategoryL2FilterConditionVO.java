@@ -4,9 +4,9 @@ import java.util.UUID;
 
 import org.springframework.data.jpa.domain.Specification;
 
-import com.smartstore.api.v1.common.domain.vo.BaseFilterConditionVO;
 import com.smartstore.api.v1.domain.category.entity.CategoryL2;
 import com.smartstore.api.v1.domain.category.query.CategoryL2Specification;
+import com.smartstore.api.v1.domain.common.vo.BaseFilterConditionVO;
 
 import lombok.Builder;
 import lombok.Data;

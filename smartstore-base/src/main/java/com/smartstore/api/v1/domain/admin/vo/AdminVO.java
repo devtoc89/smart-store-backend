@@ -4,8 +4,8 @@ import java.time.ZonedDateTime;
 
 import org.springframework.data.domain.Page;
 
-import com.smartstore.api.v1.common.domain.vo.BaseEntityVO;
 import com.smartstore.api.v1.domain.admin.entity.Admin;
+import com.smartstore.api.v1.domain.common.vo.BaseEntityVO;
 
 import lombok.Builder;
 import lombok.Getter;

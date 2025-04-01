@@ -48,8 +48,8 @@ public class CategoryRepositoryImpl implements CategoryRepositoryQuerydsl {
     List<Tuple> results = query
         .select(l1, l2, node)
         .from(l1)
-        .leftJoin(l1.subCategories, l2)
-        .leftJoin(l2.subCategories, node)
+        .leftJoin(l2).on(l2.categoryL1.id.eq(l1.id))
+        .leftJoin(node).on(node.categoryL2.id.eq(l2.id))
         .where(
             l1.isDeleted.eq(false).or(l1.isDeleted.isNull()),
             l2.isDeleted.eq(false).or(l2.isDeleted.isNull()),

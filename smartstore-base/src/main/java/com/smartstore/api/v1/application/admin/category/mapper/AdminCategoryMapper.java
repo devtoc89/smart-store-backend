@@ -9,7 +9,6 @@ import com.smartstore.api.v1.application.admin.categoryl1.dto.AdminCategoryL1Tre
 import com.smartstore.api.v1.application.admin.categoryl2.dto.AdminCategoryL2TreePutRequestDTO;
 import com.smartstore.api.v1.application.admin.categorynode.dto.AdminCategoryNodeTreePutRequestDTO;
 import com.smartstore.api.v1.common.constants.message.CommonMessage;
-import com.smartstore.api.v1.common.domain.vo.BaseEntityVO;
 import com.smartstore.api.v1.common.utils.string.StringUtil;
 import com.smartstore.api.v1.domain.category.vo.CategoryL1VO;
 import com.smartstore.api.v1.domain.category.vo.CategoryL2VO;
@@ -18,6 +17,7 @@ import com.smartstore.api.v1.domain.category.vo.CategoryVO;
 import com.smartstore.api.v1.domain.category.vo.CategoryVO.CategoryL1Nest;
 import com.smartstore.api.v1.domain.category.vo.CategoryVO.CategoryL1Nest.CategoryL2Nest;
 import com.smartstore.api.v1.domain.category.vo.CategoryVO.CategoryL1Nest.CategoryL2Nest.CategoryNodeNest;
+import com.smartstore.api.v1.domain.common.vo.BaseEntityVO;
 
 public class AdminCategoryMapper {
 

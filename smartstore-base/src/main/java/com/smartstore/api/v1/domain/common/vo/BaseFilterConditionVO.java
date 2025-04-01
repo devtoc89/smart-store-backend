@@ -1,4 +1,4 @@
-package com.smartstore.api.v1.common.domain.vo;
+package com.smartstore.api.v1.domain.common.vo;
 
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -6,9 +6,9 @@ import java.util.UUID;
 
 import org.springframework.data.jpa.domain.Specification;
 
-import com.smartstore.api.v1.common.domain.entity.BaseEntity;
-import com.smartstore.api.v1.common.domain.query.BaseSpecification;
 import com.smartstore.api.v1.common.exception.BadRequestException;
+import com.smartstore.api.v1.domain.common.entity.BaseEntity;
+import com.smartstore.api.v1.domain.common.query.BaseSpecification;
 
 import lombok.Builder;
 import lombok.Data;

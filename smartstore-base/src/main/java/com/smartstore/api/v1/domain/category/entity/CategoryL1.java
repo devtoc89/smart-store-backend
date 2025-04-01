@@ -3,7 +3,7 @@ package com.smartstore.api.v1.domain.category.entity;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.smartstore.api.v1.common.domain.entity.BaseEntity;
+import com.smartstore.api.v1.domain.common.entity.BaseEntity;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;

@@ -2,7 +2,7 @@ package com.smartstore.api.v1.domain.storedfile.vo;
 
 import org.springframework.data.domain.Page;
 
-import com.smartstore.api.v1.common.domain.vo.BaseEntityVO;
+import com.smartstore.api.v1.domain.common.vo.BaseEntityVO;
 import com.smartstore.api.v1.domain.storedfile.entity.StoredFile;
 
 import lombok.Builder;

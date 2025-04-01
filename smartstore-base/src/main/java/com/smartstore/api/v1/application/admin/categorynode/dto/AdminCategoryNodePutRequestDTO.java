@@ -3,6 +3,7 @@ package com.smartstore.api.v1.application.admin.categorynode.dto;
 import org.hibernate.validator.constraints.UUID;
 
 import com.smartstore.api.v1.application.admin.categorynode.dto.base.AdminCategoryNodeUpsertRequestDTOIF;
+import com.smartstore.api.v1.domain.category.validator.CategoryNameValid;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
@@ -23,8 +24,9 @@ import lombok.experimental.SuperBuilder;
 @Schema(description = "말단 카테고리 수정 DTO")
 public class AdminCategoryNodePutRequestDTO implements AdminCategoryNodeUpsertRequestDTOIF {
 
-  @Schema(description = "카테고리명", example = "전자제품")
   @NotBlank(message = "카테고리명은 필수 입력값입니다.")
+  @CategoryNameValid
+  @Schema(description = "카테고리명", example = "전자제품")
   private String name;
 
   @Builder.Default

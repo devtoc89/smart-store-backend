@@ -2,9 +2,9 @@ package com.smartstore.api.v1.domain.category.vo;
 
 import org.springframework.data.jpa.domain.Specification;
 
-import com.smartstore.api.v1.common.domain.vo.BaseFilterConditionVO;
 import com.smartstore.api.v1.domain.category.entity.CategoryL1;
 import com.smartstore.api.v1.domain.category.query.CategoryL1Specification;
+import com.smartstore.api.v1.domain.common.vo.BaseFilterConditionVO;
 
 import lombok.Builder;
 import lombok.Data;

@@ -1,4 +1,4 @@
-package com.smartstore.api.v1.common.domain.query;
+package com.smartstore.api.v1.domain.common.query;
 
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -7,7 +7,7 @@ import java.util.UUID;
 import org.springframework.data.jpa.domain.Specification;
 
 import com.smartstore.api.v1.common.constants.message.CommonMessage;
-import com.smartstore.api.v1.common.domain.entity.BaseEntity;
+import com.smartstore.api.v1.domain.common.entity.BaseEntity;
 
 public class BaseSpecification {
 

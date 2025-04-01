@@ -3,7 +3,7 @@ package com.smartstore.api.v1.domain.admin.entity;
 import java.time.ZonedDateTime;
 
 import com.smartstore.api.v1.common.constants.enums.Role;
-import com.smartstore.api.v1.common.domain.entity.BaseEntity;
+import com.smartstore.api.v1.domain.common.entity.BaseEntity;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;

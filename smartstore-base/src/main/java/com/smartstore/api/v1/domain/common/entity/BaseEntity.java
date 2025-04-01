@@ -1,4 +1,4 @@
-package com.smartstore.api.v1.common.domain.entity;
+package com.smartstore.api.v1.domain.common.entity;
 
 import java.time.ZonedDateTime;
 import java.util.UUID;

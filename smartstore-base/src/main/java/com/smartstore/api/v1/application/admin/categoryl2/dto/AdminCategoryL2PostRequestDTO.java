@@ -3,6 +3,7 @@ package com.smartstore.api.v1.application.admin.categoryl2.dto;
 import org.hibernate.validator.constraints.UUID;
 
 import com.smartstore.api.v1.application.admin.categoryl2.dto.base.AdminCategoryL2UpsertRequestDTOIF;
+import com.smartstore.api.v1.domain.category.validator.CategoryNameValid;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
@@ -23,7 +24,8 @@ import lombok.experimental.SuperBuilder;
 @Schema(description = "2차 카테고리 등록 DTO")
 public class AdminCategoryL2PostRequestDTO implements AdminCategoryL2UpsertRequestDTOIF {
 
-  @NotBlank(message = "상품명은 필수 입력값입니다.")
+  @NotBlank(message = "카테고리명은 필수 입력값입니다.")
+  @CategoryNameValid
   @Schema(description = "카테고리명", example = "전자제품")
   private String name;
 
