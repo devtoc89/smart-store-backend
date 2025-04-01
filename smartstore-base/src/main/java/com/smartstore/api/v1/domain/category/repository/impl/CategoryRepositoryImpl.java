@@ -28,6 +28,18 @@ public class CategoryRepositoryImpl implements CategoryRepositoryQuerydsl {
 
   private final JPAQueryFactory query;
 
+  public static final Comparator<CategoryL1> BY_ORDER_THEN_CREATED_AT_L1 = Comparator
+      .comparing(CategoryL1::getOrderBy, Comparator.nullsLast(Integer::compareTo))
+      .thenComparing(CategoryL1::getCreatedAt, Comparator.nullsLast(ZonedDateTime::compareTo));
+
+  public static final Comparator<CategoryL2> BY_ORDER_THEN_CREATED_AT_L2 = Comparator
+      .comparing(CategoryL2::getOrderBy, Comparator.nullsLast(Integer::compareTo))
+      .thenComparing(CategoryL2::getCreatedAt, Comparator.nullsLast(ZonedDateTime::compareTo));
+
+  public static final Comparator<CategoryNode> BY_ORDER_THEN_CREATED_AT_NODE = Comparator
+      .comparing(CategoryNode::getOrderBy, Comparator.nullsLast(Integer::compareTo))
+      .thenComparing(CategoryNode::getCreatedAt, Comparator.nullsLast(ZonedDateTime::compareTo));
+
   public List<CategoryL1> fetchCategoryTree(boolean needSort) {
     QCategoryL1 l1 = QCategoryL1.categoryL1;
     QCategoryL2 l2 = QCategoryL2.categoryL2;
@@ -39,26 +51,10 @@ public class CategoryRepositoryImpl implements CategoryRepositoryQuerydsl {
         .leftJoin(l1.subCategories, l2)
         .leftJoin(l2.subCategories, node)
         .where(
-            l1.isDeleted.eq(false),
-            l2.isDeleted.eq(false),
-            node.isDeleted.eq(false))
+            l1.isDeleted.eq(false).or(l1.isDeleted.isNull()),
+            l2.isDeleted.eq(false).or(l2.isDeleted.isNull()),
+            node.isDeleted.eq(false).or(node.isDeleted.isNull()))
         .fetch();
-
-    if (needSort) {
-      results.sort(Comparator
-          .comparing((Tuple t) -> t.get(QCategoryNode.categoryNode.createdAt),
-              Comparator.nullsLast(ZonedDateTime::compareTo))
-          .thenComparing((Tuple t) -> t.get(QCategoryNode.categoryNode.orderBy),
-              Comparator.nullsLast(Integer::compareTo))
-          .thenComparing((Tuple t) -> t.get(QCategoryL2.categoryL2.createdAt),
-              Comparator.nullsLast(ZonedDateTime::compareTo))
-          .thenComparing((Tuple t) -> t.get(QCategoryL2.categoryL2.orderBy),
-              Comparator.nullsLast(Integer::compareTo))
-          .thenComparing((Tuple t) -> t.get(QCategoryL1.categoryL1.createdAt),
-              Comparator.nullsLast(ZonedDateTime::compareTo))
-          .thenComparing((Tuple t) -> t.get(QCategoryL1.categoryL1.orderBy),
-              Comparator.nullsLast(Integer::compareTo)));
-    }
 
     // 결과 재조립 (중복 제거 + 트리 구성)
     Map<UUID, CategoryL1> l1Map = new LinkedHashMap<>();
@@ -98,6 +94,18 @@ public class CategoryRepositoryImpl implements CategoryRepositoryQuerydsl {
       }
     }
 
-    return new ArrayList<>(l1Map.values());
+    List<CategoryL1> res = new ArrayList<>(l1Map.values());
+
+    if (needSort) {
+      res.sort(BY_ORDER_THEN_CREATED_AT_L1);
+      res.forEach(categoryl1 -> {
+        categoryl1.getSubCategories().sort(BY_ORDER_THEN_CREATED_AT_L2);
+        categoryl1.getSubCategories()
+            .forEach(categoryl2 -> categoryl2.getSubCategories().sort(BY_ORDER_THEN_CREATED_AT_NODE));
+      });
+
+    }
+
+    return res;
   }
 }
