@@ -1,5 +1,6 @@
 package com.smartstore.api.v1.domain.product.vo;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.jpa.domain.Specification;
@@ -17,13 +18,14 @@ import lombok.Data;
 @Builder
 public class ProductFilterConditionVO {
   private final BaseFilterConditionVO base;
-  private final UUID categoryId;
   private final String name;
+
+  private final List<UUID> categoryIdList;
 
   public Specification<Product> toSpecification() {
 
     Specification<Product> cond = ProductSpecification.hasName(name)
-        .and(ProductSpecification.hasCategoryId(categoryId));
+        .and(ProductSpecification.hasCategoryIdList(categoryIdList));
 
     if (base != null) {
       cond = cond.and(base.<Product>toSubSpecification());

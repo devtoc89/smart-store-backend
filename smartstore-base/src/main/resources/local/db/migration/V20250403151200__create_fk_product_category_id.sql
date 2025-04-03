@@ -1,0 +1,1 @@
+ALTER TABLE public.product ADD CONSTRAINT fk_product_category_id FOREIGN KEY (category_id) REFERENCES public.category (id);

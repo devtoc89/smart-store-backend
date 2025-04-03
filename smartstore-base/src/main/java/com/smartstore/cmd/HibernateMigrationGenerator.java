@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.hibernate.boot.MetadataSources;
-import org.hibernate.boot.internal.MetadataBuilderImpl;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
@@ -128,10 +127,6 @@ public class HibernateMigrationGenerator implements CommandLineRunner {
       log.info("등록된 엔티티: " + javaType.getSimpleName());
       metadataSources.addAnnotatedClass(javaType);
     });
-
-    var t = ((MetadataBuilderImpl) metadataSources.getMetadataBuilder());
-    log.warn(t.getMetadataBuildingOptions().getImplicitNamingStrategy());
-    log.warn(t.getMetadataBuildingOptions().getPhysicalNamingStrategy());
 
     tool.getSchemaMigrator(executionOptions.getConfigurationValues()).doMigration(
         metadataSources.buildMetadata(),
