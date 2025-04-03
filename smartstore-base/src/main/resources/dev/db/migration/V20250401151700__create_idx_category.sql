@@ -1,3 +1,7 @@
+drop index if exists idx_category_l2_active;
+
+drop index if exists idx_category_node_active;
+
 CREATE INDEX idx_category_l2_active ON category_l2 (category_l1_id)
 WHERE
   is_deleted IS DISTINCT
