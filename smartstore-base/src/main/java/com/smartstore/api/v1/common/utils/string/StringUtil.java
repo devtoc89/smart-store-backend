@@ -6,6 +6,9 @@ import org.apache.commons.lang3.ObjectUtils;
 
 import com.smartstore.api.v1.common.constants.message.CommonMessage;
 
+import lombok.extern.log4j.Log4j2;
+
+@Log4j2
 public class StringUtil extends org.springframework.util.StringUtils {
 
   private StringUtil() {
@@ -14,6 +17,7 @@ public class StringUtil extends org.springframework.util.StringUtils {
 
   public static UUID stringToUUIDOrNew(String uuidStr) {
     try {
+      log.info(uuidStr);
       return ObjectUtils.isEmpty(uuidStr) ? UUID.randomUUID() : UUID.fromString(uuidStr);
     } catch (IllegalArgumentException e) {
       throw new IllegalArgumentException("유효하지 않은 UUID 형식입니다: " + uuidStr);

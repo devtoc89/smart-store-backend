@@ -5,18 +5,16 @@ import java.util.UUID;
 
 import org.springframework.util.ObjectUtils;
 
-import com.smartstore.api.v1.application.admin.categoryl1.dto.AdminCategoryL1TreePutRequestDTO;
-import com.smartstore.api.v1.application.admin.categoryl2.dto.AdminCategoryL2TreePutRequestDTO;
-import com.smartstore.api.v1.application.admin.categorynode.dto.AdminCategoryNodeTreePutRequestDTO;
+import com.smartstore.api.v1.application.admin.category.dto.tree.AdminCategoryL1TreePutRequestDTO;
+import com.smartstore.api.v1.application.admin.category.dto.tree.AdminCategoryL2TreePutRequestDTO;
+import com.smartstore.api.v1.application.admin.category.dto.tree.AdminCategoryL3TreePutRequestDTO;
 import com.smartstore.api.v1.common.constants.message.CommonMessage;
 import com.smartstore.api.v1.common.utils.string.StringUtil;
-import com.smartstore.api.v1.domain.category.vo.CategoryL1VO;
-import com.smartstore.api.v1.domain.category.vo.CategoryL2VO;
-import com.smartstore.api.v1.domain.category.vo.CategoryNodeVO;
+import com.smartstore.api.v1.domain.category.vo.CategoryNestVO;
+import com.smartstore.api.v1.domain.category.vo.CategoryNestVO.CategoryL1Nest;
+import com.smartstore.api.v1.domain.category.vo.CategoryNestVO.CategoryL1Nest.CategoryL2Nest;
+import com.smartstore.api.v1.domain.category.vo.CategoryNestVO.CategoryL1Nest.CategoryL2Nest.CategoryL3Nest;
 import com.smartstore.api.v1.domain.category.vo.CategoryVO;
-import com.smartstore.api.v1.domain.category.vo.CategoryVO.CategoryL1Nest;
-import com.smartstore.api.v1.domain.category.vo.CategoryVO.CategoryL1Nest.CategoryL2Nest;
-import com.smartstore.api.v1.domain.category.vo.CategoryVO.CategoryL1Nest.CategoryL2Nest.CategoryNodeNest;
 import com.smartstore.api.v1.domain.common.vo.BaseEntityVO;
 
 public class AdminCategoryMapper {
@@ -25,67 +23,61 @@ public class AdminCategoryMapper {
     throw new UnsupportedOperationException(CommonMessage.CANNOT_INITIALIZE_UTIL_CLASS_MSG);
   }
 
-  public static List<CategoryL1Nest> makeCategoryL1VONestListWhenPut(List<AdminCategoryL1TreePutRequestDTO> list) {
+  public static CategoryNestVO fromPutDTO(List<AdminCategoryL1TreePutRequestDTO> list) {
+    return new CategoryNestVO(toCategoryL1NestList(list));
+  }
+
+  private static CategoryL1Nest toCategoryL1Nest(AdminCategoryL1TreePutRequestDTO l1) {
+    var id = StringUtil.stringToUUIDOrNew(l1.getId());
+    return new CategoryL1Nest(
+        toCategoryVO(id, l1.getName(), l1.getOrderBy(), 1, null),
+        toCategoryL2NestList(l1.getChildren(), id));
+  }
+
+  private static List<CategoryL1Nest> toCategoryL1NestList(List<AdminCategoryL1TreePutRequestDTO> list) {
     if (ObjectUtils.isEmpty(list))
       return List.of();
-    return list.stream().map(l1 -> {
-      var id = StringUtil.stringToUUIDOrNew(l1.getId());
-      return new CategoryL1Nest(
-          CategoryL1VO.builder()
-              .name(l1.getName())
-              .orderBy(l1.getOrderBy())
-              .base(BaseEntityVO.builder()
-                  .id(id)
-                  .build())
-              .build(),
-          makeCategoryL2VONestListWhenPut(id, l1.getChildren()));
-    })
+    return list.stream()
+        .map(AdminCategoryMapper::toCategoryL1Nest)
         .toList();
   }
 
-  public static List<CategoryL2Nest> makeCategoryL2VONestListWhenPut(UUID parentId,
-      List<AdminCategoryL2TreePutRequestDTO> list) {
+  private static CategoryL2Nest toCategoryL2Nest(AdminCategoryL2TreePutRequestDTO l2, UUID parentId) {
+    var id = StringUtil.stringToUUIDOrNew(l2.getId());
+    return new CategoryL2Nest(
+        toCategoryVO(id, l2.getName(), l2.getOrderBy(), 2, parentId),
+        toCategoryL3NestList(l2.getChildren(), id));
+  }
+
+  private static List<CategoryL2Nest> toCategoryL2NestList(List<AdminCategoryL2TreePutRequestDTO> list, UUID parentId) {
     if (ObjectUtils.isEmpty(list))
       return List.of();
-
-    var categoryL1Id = parentId;
-
-    return list.stream().map(l2 -> {
-      var id = StringUtil.stringToUUIDOrNew(l2.getId());
-      return new CategoryL2Nest(CategoryL2VO.builder()
-          .categoryL1Id(categoryL1Id)
-          .name(l2.getName())
-          .orderBy(l2.getOrderBy())
-          .base(BaseEntityVO.builder()
-              .id(id)
-              .build())
-          .build(),
-          makeCategoryNodeNestVOListWhenPut(id, l2
-              .getChildren()));
-    })
+    return list.stream()
+        .map(l2 -> toCategoryL2Nest(l2, parentId))
         .toList();
   }
 
-  public static List<CategoryNodeNest> makeCategoryNodeNestVOListWhenPut(
-      UUID parentId,
-      List<AdminCategoryNodeTreePutRequestDTO> list) {
+  private static CategoryL3Nest toCategoryL3Nest(AdminCategoryL3TreePutRequestDTO l3, UUID parentId) {
+    return new CategoryL3Nest(
+        toCategoryVO(StringUtil.stringToUUIDOrNew(l3.getId()), l3.getName(), l3.getOrderBy(), 3, parentId));
+  }
+
+  private static List<CategoryL3Nest> toCategoryL3NestList(List<AdminCategoryL3TreePutRequestDTO> list,
+      UUID parentId) {
     if (ObjectUtils.isEmpty(list))
       return List.of();
-
-    return list.stream().map(node -> new CategoryNodeNest(
-        CategoryNodeVO.builder()
-            .categoryL2Id(parentId)
-            .name(node.getName())
-            .orderBy(node.getOrderBy())
-            .base(BaseEntityVO.builder()
-                .id(StringUtil.stringToUUIDOrNew(node.getId()))
-                .build())
-            .build()))
+    return list.stream()
+        .map(l3 -> toCategoryL3Nest(l3, parentId))
         .toList();
   }
 
-  public static CategoryVO fromPutDTO(List<AdminCategoryL1TreePutRequestDTO> list) {
-    return new CategoryVO(makeCategoryL1VONestListWhenPut(list));
+  private static CategoryVO toCategoryVO(UUID id, String name, Integer orderBy, int level, UUID parentId) {
+    return CategoryVO.builder()
+        .name(name)
+        .orderBy(orderBy)
+        .level(level)
+        .parentId(parentId)
+        .base(BaseEntityVO.builder().id(id).build())
+        .build();
   }
-
 }

@@ -1,10 +1,11 @@
 package com.smartstore.api.v1.domain.category.vo;
 
-import java.util.List;
+import java.util.UUID;
 
-import com.smartstore.api.v1.domain.category.entity.CategoryL1;
-import com.smartstore.api.v1.domain.category.entity.CategoryL2;
-import com.smartstore.api.v1.domain.category.entity.CategoryNode;
+import org.springframework.data.domain.Page;
+
+import com.smartstore.api.v1.domain.category.entity.Category;
+import com.smartstore.api.v1.domain.common.vo.BaseEntityVO;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -14,49 +15,23 @@ import lombok.RequiredArgsConstructor;
 @Builder
 @RequiredArgsConstructor
 public class CategoryVO {
-  private final List<CategoryL1Nest> categoryL1Nest;
+  private final BaseEntityVO base;
+  private final String name;
+  private final UUID parentId;
+  private final Integer orderBy;
+  private final Integer level;
 
-  public static CategoryVO fromEntityWithList(List<CategoryL1> entities) {
-    return new CategoryVO(entities.stream().map(CategoryL1Nest::fromEntity).toList());
+  public static CategoryVO fromEntity(Category entity) {
+    return CategoryVO.builder()
+        .base(BaseEntityVO.fromEntity(entity))
+        .name(entity.getName())
+        .orderBy(entity.getOrderBy())
+        .parentId(entity.getParentId())
+        .level(entity.getLevel())
+        .build();
   }
 
-  @Getter
-  @RequiredArgsConstructor
-  public static class CategoryL1Nest {
-    private final CategoryL1VO categoryL1VO;
-    private final List<CategoryL2Nest> children;
-
-    public static CategoryL1Nest fromEntity(CategoryL1 entity) {
-      return new CategoryL1Nest(CategoryL1VO.fromEntity(entity),
-          entity.getSubCategories().stream()
-              .map(CategoryL2Nest::fromEntity)
-              .toList());
-    }
-
-    @Getter
-    @RequiredArgsConstructor
-    public static class CategoryL2Nest {
-      private final CategoryL2VO categoryL2VO;
-      private final List<CategoryNodeNest> children;
-
-      public static CategoryL2Nest fromEntity(CategoryL2 entity) {
-        return new CategoryL2Nest(
-            CategoryL2VO.fromEntity(entity),
-            entity.getSubCategories().stream()
-                .map(CategoryNodeNest::fromEntity)
-                .toList());
-      }
-
-      @Getter
-      @RequiredArgsConstructor
-      public static class CategoryNodeNest {
-        private final CategoryNodeVO categoryNodeVO;
-
-        public static CategoryNodeNest fromEntity(CategoryNode entity) {
-          return new CategoryNodeNest(CategoryNodeVO.fromEntity(entity));
-        }
-      }
-    }
-
+  public static Page<CategoryVO> fromEntityWithPage(Page<Category> entity) {
+    return entity.map(v -> fromEntity(v));
   }
 }

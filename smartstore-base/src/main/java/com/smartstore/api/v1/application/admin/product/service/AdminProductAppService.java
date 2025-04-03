@@ -19,7 +19,9 @@ import com.smartstore.api.v1.application.admin.product.dto.AdminProductResponseD
 import com.smartstore.api.v1.application.admin.productimage.dto.AdminProductImageResponseDTO;
 import com.smartstore.api.v1.common.utils.string.StringUtil;
 import com.smartstore.api.v1.common.utils.validation.ValidationUtil;
-import com.smartstore.api.v1.domain.category.service.CategoryNodeService;
+import com.smartstore.api.v1.domain.category.service.CategoryService;
+import com.smartstore.api.v1.domain.category.service.MvCategoryHierarchyService;
+import com.smartstore.api.v1.domain.category.vo.MvCategoryHierarchyConditionVO;
 import com.smartstore.api.v1.domain.product.service.ProductImageService;
 import com.smartstore.api.v1.domain.product.service.ProductService;
 
@@ -32,11 +34,12 @@ public class AdminProductAppService {
   private final ProductImageService productImageService;
 
   private final ProductService productService;
-  private final CategoryNodeService categoryNodeService;
+  private final CategoryService categoryService;
+  private final MvCategoryHierarchyService mvCategoryHierarchyService;
 
   private void validateCategory(String categoryId) throws BindException {
-    if (ObjectUtils.isEmpty(categoryId) || !categoryNodeService.isExist(StringUtil.stringToUUID(categoryId))) {
-      throw ValidationUtil.createBindException(this, "categoryId", "말단 카테고리의 ID가 유효하지 않습니다.");
+    if (ObjectUtils.isEmpty(categoryId) || !categoryService.isExists(StringUtil.stringToUUID(categoryId))) {
+      throw ValidationUtil.createBindException(this, "categoryId", "대상 카테고리의 ID가 유효하지 않습니다.");
     }
   }
 
@@ -49,9 +52,17 @@ public class AdminProductAppService {
   @Transactional(readOnly = true)
   public Page<AdminProductResponseDTO> getList(
       AdminProductFilterRequestDTO dto, Pageable pageable) {
+    // TODO: refactoring
+    var mvCategorySearchCond = MvCategoryHierarchyConditionVO.builder()
+        .categoryL1Id(StringUtil.stringToUUID(dto.getCategoryL1Id()))
+        .categoryL2Id(StringUtil.stringToUUID(dto.getCategoryL2Id()))
+        .categoryL3Id(StringUtil.stringToUUID(dto.getCategoryL3Id()))
+        .build();
+    var categoryIdList = mvCategoryHierarchyService
+        .findManyByCondition(mvCategorySearchCond).stream().map(v -> v.getId()).toList();
     return AdminProductResponseDTO.fromVOWithPage(
         productService.findManyByCondition(
-            dto.toSearchConditionVO(), pageable));
+            dto.toSearchConditionVO(categoryIdList), pageable));
   }
 
   @Transactional

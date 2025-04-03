@@ -5,12 +5,12 @@ import java.util.List;
 import org.hibernate.validator.constraints.UUID;
 
 import com.smartstore.api.v1.application.admin.product.dto.base.AdminProductUpsertRequestDTOIF;
+import com.smartstore.api.v1.domain.product.validator.ProductNameValid;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -27,8 +27,8 @@ import lombok.experimental.SuperBuilder;
 @Schema(description = "상품 수정 DTO")
 public class AdminProductPutRequestDTO implements AdminProductUpsertRequestDTOIF {
 
-  @Pattern(regexp = "^$|.{2,}", message = "검색어는 2글자 이상 입력해야 합니다.")
   @NotBlank(message = "상품명은 필수 입력값입니다.")
+  @ProductNameValid
   @Schema(description = "상품명 (2글자 이상 입력)", example = "사과")
   private String name;
 
