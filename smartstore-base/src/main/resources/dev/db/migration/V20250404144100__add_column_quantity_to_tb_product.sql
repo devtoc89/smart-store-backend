@@ -1,0 +1,1 @@
+ALTER TABLE public.product ADD stock int4 DEFAULT 0 NOT NULL;
