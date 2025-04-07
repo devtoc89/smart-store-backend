@@ -48,8 +48,4 @@ public class ProductImage extends BaseEntity {
   @Column(nullable = false)
   private Integer orderBy = -1;
 
-  public void setProduct(Product product) {
-    this.product = product;
-    this.productId = product.getId(); // 직접 동기화
-  }
 }

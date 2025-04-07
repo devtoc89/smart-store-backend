@@ -39,6 +39,7 @@ public class ProductService {
         .builder()
         .file(entityManager.getReference(StoredFile.class, iamgeVO.getFile().getBase().getId()))
         .product(product)
+        .productId(product.getId())
         .isMain(iamgeVO.getIsMain())
         .orderBy(iamgeVO.getOrderBy())
         .build();
