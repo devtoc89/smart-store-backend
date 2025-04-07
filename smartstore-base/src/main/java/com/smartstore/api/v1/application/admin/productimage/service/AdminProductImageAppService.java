@@ -13,6 +13,7 @@ import org.springframework.validation.BindException;
 import com.smartstore.api.v1.application.admin.productimage.dto.AdminProductImageFilterRequestDTO;
 import com.smartstore.api.v1.application.admin.productimage.dto.AdminProductImagePostRequestDTO;
 import com.smartstore.api.v1.application.admin.productimage.dto.AdminProductImageResponseDTO;
+import com.smartstore.api.v1.common.config.CloudFrontProperties;
 import com.smartstore.api.v1.common.utils.validation.ValidationUtil;
 import com.smartstore.api.v1.domain.product.service.ProductImageService;
 import com.smartstore.api.v1.domain.product.service.ProductService;
@@ -27,6 +28,8 @@ public class AdminProductImageAppService {
   private final ProductService productService;
   private final ProductImageService productImageService;
   private final StoredFileService storedFileService;
+
+  private final CloudFrontProperties cloudFrontProperties;
 
   private void validateProduct(String productId) throws BindException {
     if (ObjectUtils.isEmpty(productId) || !productService.isExist(UUID.fromString(productId))) {
@@ -50,7 +53,7 @@ public class AdminProductImageAppService {
   public AdminProductImageResponseDTO get(String productId, String id) throws BindException {
     validateProduct(productId);
     return AdminProductImageResponseDTO.fromVO(
-        productImageService.findById(UUID.fromString(id)));
+        productImageService.findById(UUID.fromString(id)), cloudFrontProperties.getUrl());
   }
 
   @Transactional(readOnly = true)
@@ -58,7 +61,8 @@ public class AdminProductImageAppService {
       AdminProductImageFilterRequestDTO dto, Pageable pageable) {
     return AdminProductImageResponseDTO.fromVOWithPage(
         productImageService.findManyByCondition(
-            dto.toSearchConditionVO(productId), pageable));
+            dto.toSearchConditionVO(productId), pageable),
+        cloudFrontProperties.getUrl());
   }
 
   @Transactional
@@ -70,7 +74,8 @@ public class AdminProductImageAppService {
     storedFileService.updateIsUploaded(UUID.fromString(dto.getFileId()));
     return AdminProductImageResponseDTO.fromVO(
         productImageService.create(
-            dto.toVO(productId)));
+            dto.toVO(productId)),
+        cloudFrontProperties.getUrl());
   }
 
   @Transactional
@@ -79,7 +84,8 @@ public class AdminProductImageAppService {
     validateProductImage(id);
     return AdminProductImageResponseDTO.fromVO(
         productImageService.delete(
-            UUID.fromString(id)));
+            UUID.fromString(id)),
+        cloudFrontProperties.getUrl());
   }
 
   @Transactional
@@ -89,7 +95,8 @@ public class AdminProductImageAppService {
     validateProductImage(id);
 
     return AdminProductImageResponseDTO
-        .fromVO(productImageService.updateMain(UUID.fromString(productId), UUID.fromString(id)));
+        .fromVO(productImageService.updateMain(UUID.fromString(productId), UUID.fromString(id)),
+            cloudFrontProperties.getUrl());
   }
 
   @Transactional
@@ -98,7 +105,7 @@ public class AdminProductImageAppService {
     validateProduct(productId);
     return productImageService.updateOrder(UUID.fromString(productId), sortedImageIds.stream()
         .map(UUID::fromString)
-        .toList()).stream().map(AdminProductImageResponseDTO::new).toList();
+        .toList()).stream().map(v -> new AdminProductImageResponseDTO(v, cloudFrontProperties.getUrl())).toList();
   }
 
 }

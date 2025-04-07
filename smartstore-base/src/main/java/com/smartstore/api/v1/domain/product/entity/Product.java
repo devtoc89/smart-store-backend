@@ -34,6 +34,9 @@ public class Product extends BaseEntity {
   private Integer price;
 
   @Column(nullable = false)
+  private Integer stock;
+
+  @Column(nullable = false)
   private UUID categoryId;
 
   @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)

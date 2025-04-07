@@ -7,6 +7,7 @@ import com.smartstore.api.v1.application.admin.productimage.dto.base.AdminProduc
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -31,6 +32,7 @@ public class AdminProductImagePostRequestDTO
   @Schema(description = "메인 여부", example = "true")
   private Boolean isMain;
 
+  @Builder.Default
   @Schema(description = "순서", example = "1")
-  private Integer orderBy;
+  private Integer orderBy = -1;
 }

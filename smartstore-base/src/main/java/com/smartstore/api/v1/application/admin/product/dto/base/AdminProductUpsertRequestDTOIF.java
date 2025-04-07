@@ -16,16 +16,18 @@ public interface AdminProductUpsertRequestDTOIF {
 
   Integer getPrice();
 
+  Integer getStock();
+
   String getCategoryId();
 
-  List<AdminProductWithImageDTO> getImages();
+  // List<AdminProductWithImageDTO> getImages();
 
-  default List<ProductImageVO> makeImageVOList() {
-    return makeImageVOList(null);
-  }
+  // default List<ProductImageVO> makeImageVOList() {
+  // return makeImageVOList(null);
+  // }
 
-  default List<ProductImageVO> makeImageVOList(UUID productId) {
-    return Optional.ofNullable(getImages()).map(images -> images.stream().map(v -> ProductImageVO.builder()
+  default List<ProductImageVO> makeImageVOList(UUID productId, List<AdminProductWithImageDTO> images) {
+    return Optional.ofNullable(images).map(v1 -> v1.stream().map(v -> ProductImageVO.builder()
         .file(StoredFileVO.builder()
             .base(BaseEntityVO.builder()
                 .id(UUID.fromString(v.getFileId()))
@@ -41,9 +43,18 @@ public interface AdminProductUpsertRequestDTOIF {
     return ProductVO.builder()
         .name(getName())
         .price(getPrice())
+        .stock(getStock())
         .categoryId(StringUtil.stringToUUID(getCategoryId()))
-        .images((makeImageVOList()))
         .build();
   }
 
+  default ProductVO toVO(UUID id, List<AdminProductWithImageDTO> images) {
+    return ProductVO.builder()
+        .name(getName())
+        .price(getPrice())
+        .stock(getStock())
+        .categoryId(StringUtil.stringToUUID(getCategoryId()))
+        .images((makeImageVOList(id, images)))
+        .build();
+  }
 }

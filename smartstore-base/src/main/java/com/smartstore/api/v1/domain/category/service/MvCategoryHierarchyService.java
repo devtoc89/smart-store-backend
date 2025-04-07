@@ -1,6 +1,7 @@
 package com.smartstore.api.v1.domain.category.service;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -26,6 +27,16 @@ public class MvCategoryHierarchyService {
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   public List<MvCategoryHierarchy> findManyByCondition(MvCategoryHierarchyConditionVO condition) {
     return mvCategoryHierarchyRepository.findAll(condition.toSpecification());
+  }
+
+  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+  public List<MvCategoryHierarchy> findAllById(List<UUID> ids) {
+    return mvCategoryHierarchyRepository.findAllById(ids);
+  }
+
+  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+  public MvCategoryHierarchy findById(UUID id) {
+    return mvCategoryHierarchyRepository.findById(id).map(v -> v).orElse(null);
   }
 
 }

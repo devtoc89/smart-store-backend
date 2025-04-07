@@ -14,7 +14,6 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
-import com.smartstore.api.v1.common.config.CloudFrontProperties;
 import com.smartstore.api.v1.domain.product.entity.Product;
 import com.smartstore.api.v1.domain.product.entity.ProductImage;
 import com.smartstore.api.v1.domain.product.repository.ProductImageRepository;
@@ -33,7 +32,6 @@ public class ProductImageService {
   @PersistenceContext
   private EntityManager entityManager;
 
-  private final CloudFrontProperties cloudFrontProperties;
   private final ProductImageRepository productImageRepository;
 
   private ProductImage findByIdOrExcept(UUID id) {
@@ -65,7 +63,7 @@ public class ProductImageService {
 
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   public ProductImageVO findById(UUID id) {
-    return ProductImageVO.fromEntity(findByIdOrExcept(id), cloudFrontProperties.getUrl());
+    return ProductImageVO.fromEntity(findByIdOrExcept(id));
   }
 
   @Transactional(propagation = Propagation.REQUIRED)
@@ -79,17 +77,12 @@ public class ProductImageService {
     var tgtImage = findByIdOrExcept(id);
     tgtImage.setMain(true);
     productImageRepository.save(tgtImage);
-    return ProductImageVO.fromEntity(tgtImage, cloudFrontProperties.getUrl());
+    return ProductImageVO.fromEntity(tgtImage);
   }
-  // @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-  // public ProductImageVO findMain(UUID productId) {
-  // return ProductImageVO.fromEntity(productImageRepository.findMain(productId));
-  // }
 
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   public Page<ProductImageVO> findManyByCondition(ProductImageFilterConditionVO condition, Pageable pageable) {
-    return ProductImageVO.fromEntityWithPage(productImageRepository.findAll(condition.toSpecification(), pageable),
-        cloudFrontProperties.getUrl());
+    return ProductImageVO.fromEntityWithPage(productImageRepository.findAll(condition.toSpecification(), pageable));
   }
 
   @Transactional(propagation = Propagation.REQUIRED)
@@ -100,8 +93,7 @@ public class ProductImageService {
         .isMain(vo.getIsMain())
         .orderBy(vo.getOrderBy())
         .build();
-    return ProductImageVO.fromEntity(productImageRepository.save(productImageRepository.save(newItem)),
-        cloudFrontProperties.getUrl());
+    return ProductImageVO.fromEntity(productImageRepository.save(productImageRepository.save(newItem)));
   }
 
   @Transactional(propagation = Propagation.REQUIRED)
@@ -113,7 +105,7 @@ public class ProductImageService {
           entity.markDelete();
           return productImageRepository.save(entity);
         })
-        .map(v -> ProductImageVO.fromEntity(v, cloudFrontProperties.getUrl()))
+        .map(ProductImageVO::fromEntity)
         .toList();
   }
 
@@ -122,7 +114,7 @@ public class ProductImageService {
     var entity = findByIdOrExcept(id);
     applyPartialUpdate(entity, vo);
 
-    return ProductImageVO.fromEntity(productImageRepository.save(entity), cloudFrontProperties.getUrl());
+    return ProductImageVO.fromEntity(productImageRepository.save(entity));
   }
 
   @Transactional(propagation = Propagation.REQUIRED)
@@ -130,7 +122,7 @@ public class ProductImageService {
     var entity = findByIdOrExcept(id);
     entity.markDelete();
 
-    return ProductImageVO.fromEntity(productImageRepository.save(entity), cloudFrontProperties.getUrl());
+    return ProductImageVO.fromEntity(productImageRepository.save(entity));
   }
 
   @Transactional(propagation = Propagation.REQUIRED)
@@ -149,6 +141,6 @@ public class ProductImageService {
       }
     }
 
-    return images.stream().map(v -> ProductImageVO.fromEntity(v, cloudFrontProperties.getUrl())).toList();
+    return images.stream().map(ProductImageVO::fromEntity).toList();
   }
 }

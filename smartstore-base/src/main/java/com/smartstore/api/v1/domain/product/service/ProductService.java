@@ -1,6 +1,8 @@
 package com.smartstore.api.v1.domain.product.service;
 
+import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -10,11 +12,13 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
-import com.smartstore.api.v1.common.config.CloudFrontProperties;
 import com.smartstore.api.v1.domain.product.entity.Product;
+import com.smartstore.api.v1.domain.product.entity.ProductImage;
 import com.smartstore.api.v1.domain.product.repository.ProductRepository;
 import com.smartstore.api.v1.domain.product.vo.ProductFilterConditionVO;
+import com.smartstore.api.v1.domain.product.vo.ProductImageVO;
 import com.smartstore.api.v1.domain.product.vo.ProductVO;
+import com.smartstore.api.v1.domain.storedfile.entity.StoredFile;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -29,20 +33,42 @@ public class ProductService {
   @PersistenceContext
   private EntityManager entityManager;
   private final ProductRepository productRepository;
-  private final CloudFrontProperties cloudFrontProperties;
+
+  private ProductImage makeImageEntity(Product product, ProductImageVO iamgeVO) {
+    return ProductImage
+        .builder()
+        .file(entityManager.getReference(StoredFile.class, iamgeVO.getFile().getBase().getId()))
+        .product(product)
+        .isMain(iamgeVO.getIsMain())
+        .orderBy(iamgeVO.getOrderBy())
+        .build();
+  }
 
   public Product applyCreate(UUID id, ProductVO vo) {
-    return Product.builder()
+
+    var item = Product.builder()
         .id(id)
         .name(vo.getName())
         .price(vo.getPrice())
+        .stock(vo.getStock())
         .categoryId(vo.getCategoryId())
         .build();
+
+    var images = Optional.ofNullable(vo.getImages())
+        .map(imageList -> imageList.stream()
+            .map(v -> makeImageEntity(item, v))
+            .toList())
+        .orElse(List.<ProductImage>of());
+
+    item.setImages(images);
+
+    return item;
   }
 
   public void applyUpdate(Product entity, ProductVO vo) {
     entity.setName(vo.getName());
     entity.setPrice(vo.getPrice());
+    entity.setStock(vo.getStock());
     entity.setCategoryId(vo.getCategoryId());
   }
 
@@ -52,6 +78,9 @@ public class ProductService {
     }
     if (!ObjectUtils.isEmpty(vo.getPrice())) {
       entity.setPrice(vo.getPrice());
+    }
+    if (!ObjectUtils.isEmpty(vo.getStock())) {
+      entity.setPrice(vo.getStock());
     }
     if (!ObjectUtils.isEmpty(vo.getCategoryId())) {
       entity.setCategoryId(vo.getCategoryId());
@@ -69,20 +98,19 @@ public class ProductService {
 
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   public ProductVO findById(UUID id) {
-    return ProductVO.fromEntity(findByIdOrExcept(id), cloudFrontProperties.getUrl());
+    return ProductVO.fromEntity(findByIdOrExcept(id));
   }
 
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   public Page<ProductVO> findManyByCondition(ProductFilterConditionVO condition, Pageable pageable) {
-    return ProductVO.fromEntityWithPage(productRepository.findAll(condition.toSpecification(), pageable),
-        cloudFrontProperties.getUrl());
+    return ProductVO.fromEntityWithPage(productRepository.findAll(condition.toSpecification(), pageable));
   }
 
   @Transactional(propagation = Propagation.REQUIRED)
   public ProductVO create(UUID id, ProductVO vo) {
     var newProduct = applyCreate(id, vo);
 
-    return ProductVO.fromEntity(productRepository.save(newProduct), cloudFrontProperties.getUrl());
+    return ProductVO.fromEntity(productRepository.save(newProduct));
   }
 
   @Transactional(propagation = Propagation.REQUIRED)
@@ -90,7 +118,7 @@ public class ProductService {
     Product product = findByIdOrExcept(id);
     applyUpdate(product, vo);
 
-    return ProductVO.fromEntity(productRepository.save(product), cloudFrontProperties.getUrl());
+    return ProductVO.fromEntity(productRepository.save(product));
   }
 
   @Transactional(propagation = Propagation.REQUIRED)
@@ -98,7 +126,7 @@ public class ProductService {
     Product product = findByIdOrExcept(id);
     applyPartialUpdate(product, vo);
 
-    return ProductVO.fromEntity(productRepository.save(product), cloudFrontProperties.getUrl());
+    return ProductVO.fromEntity(productRepository.save(product));
   }
 
   @Transactional(propagation = Propagation.REQUIRED)
@@ -106,6 +134,6 @@ public class ProductService {
     Product product = findByIdOrExcept(id);
     product.markDelete();
 
-    return ProductVO.fromEntity(productRepository.save(product), cloudFrontProperties.getUrl());
+    return ProductVO.fromEntity(productRepository.save(product));
   }
 }

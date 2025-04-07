@@ -1,5 +1,7 @@
 package com.smartstore.api.v1.application.admin.productimage.dto;
 
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 
 import com.smartstore.api.v1.common.dto.AdminResponseBaseDTO;
@@ -37,21 +39,21 @@ public class AdminProductImageResponseDTO extends AdminResponseBaseDTO {
   @Schema(description = "이미지 사이즈", example = "1000")
   private Long size;
 
-  public AdminProductImageResponseDTO(ProductImageVO vo) {
+  public AdminProductImageResponseDTO(ProductImageVO vo, String cdnUrl) {
     super(vo.getBase());
     this.productId = vo.getProductId().toString();
-    this.url = vo.getUrl() + vo.getFile().getKey();
+    this.url = Optional.ofNullable(cdnUrl).orElse("") + vo.getFile().getKey();
     this.name = vo.getFile().getFilename();
     this.contentType = vo.getFile().getContentType();
     this.size = vo.getFile().getFileSize();
   }
 
-  public static Page<AdminProductImageResponseDTO> fromVOWithPage(Page<ProductImageVO> voList) {
+  public static Page<AdminProductImageResponseDTO> fromVOWithPage(Page<ProductImageVO> voList, String cdnUrl) {
     // TODO: List의 경우 overfetch 고려하여 요소 제한을 고려해야함
-    return voList.map(AdminProductImageResponseDTO::new);
+    return voList.map(v -> fromVO(v, cdnUrl));
   }
 
-  public static AdminProductImageResponseDTO fromVO(ProductImageVO vo) {
-    return vo == null ? null : new AdminProductImageResponseDTO(vo);
+  public static AdminProductImageResponseDTO fromVO(ProductImageVO vo, String cdnUrl) {
+    return vo == null ? null : new AdminProductImageResponseDTO(vo, cdnUrl);
   }
 }

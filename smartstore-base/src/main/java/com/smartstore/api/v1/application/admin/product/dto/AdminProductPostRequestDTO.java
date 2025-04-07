@@ -26,6 +26,7 @@ import lombok.experimental.SuperBuilder;
 @EqualsAndHashCode
 @Schema(description = "상품 등록 DTO")
 public class AdminProductPostRequestDTO implements AdminProductUpsertRequestDTOIF {
+
   @NotBlank(message = "상품명은 필수 입력값입니다.")
   @ProductNameValid
   @Schema(description = "상품명 (2글자 이상 입력)", example = "사과")
@@ -35,6 +36,11 @@ public class AdminProductPostRequestDTO implements AdminProductUpsertRequestDTOI
   @Min(value = 0, message = "가격은 0 이상이어야 합니다.")
   @Schema(description = "상품 가격", example = "1000")
   private Integer price;
+
+  @NotNull(message = "상품수는 필수 입력값입니다.")
+  @Min(value = 0, message = "상품수는 0 이상이어야 합니다.")
+  @Schema(description = "상품수", example = "10")
+  private Integer stock;
 
   @UUID
   @NotBlank(message = "카테고리는 필수항목입니다.")
