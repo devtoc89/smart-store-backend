@@ -43,7 +43,7 @@ public class AdminJwtProvider {
     return refreshTokenValidity;
   }
 
-  public String generateToken(String subject, Role role) {
+  public String generateAccessToken(String subject, Role role) {
     return generateAccessToken(subject, role, System.currentTimeMillis() + accessTokenValidity);
   }
 
