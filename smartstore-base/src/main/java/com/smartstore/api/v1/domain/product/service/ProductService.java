@@ -81,7 +81,7 @@ public class ProductService {
       entity.setPrice(vo.getPrice());
     }
     if (!ObjectUtils.isEmpty(vo.getStock())) {
-      entity.setPrice(vo.getStock());
+      entity.setStock(vo.getStock());
     }
     if (!ObjectUtils.isEmpty(vo.getCategoryId())) {
       entity.setCategoryId(vo.getCategoryId());
