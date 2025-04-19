@@ -1,10 +1,15 @@
 package com.smartstore.api.v1.domain.product.service;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
@@ -36,7 +41,6 @@ public class ProductService {
   private EntityManager entityManager;
 
   private final ProductRepository productRepository;
-  private final ProductImageService productImageService;
 
   private ProductImage makeImageEntity(Product product, ProductImageVO iamgeVO) {
     return ProductImage
@@ -49,12 +53,57 @@ public class ProductService {
         .build();
   }
 
-  private List<ProductImage> applyProductImages(Product item, ProductVO vo) {
-    return Optional.ofNullable(vo.getImages())
-        .map(imageList -> imageList.stream()
-            .map(v -> makeImageEntity(item, v))
-            .collect(Collectors.toCollection(ArrayList::new)))
+  private List<ProductImage> applyProductImages(Product product, ProductVO imageVOs) {
+    if (imageVOs.getImages() == null) {
+      return new ArrayList<>();
+    }
+
+    List<ProductImage> currentImages = Optional.ofNullable(product.getImages())
         .orElseGet(ArrayList::new);
+
+    // 기존 이미지 맵
+    Map<UUID, ProductImage> existingMap = currentImages.stream()
+        .collect(Collectors.toMap(img -> img.getFile().getId(), Function.identity()));
+
+    // 입력된 이미지 맵
+    Map<UUID, ProductImageVO> inputMap = imageVOs.getImages().stream()
+        .collect(Collectors.toMap(vo -> vo.getFile().getBase().getId(), Function.identity()));
+
+    // 1. 삭제 대상: 기존에는 있었지만 입력에는 없는 fileId
+    Set<UUID> toDelete = new HashSet<>(existingMap.keySet());
+    toDelete.removeAll(inputMap.keySet());
+
+    // 2. 신규 대상: 입력에는 있지만 기존에는 없는 fileId
+    Set<UUID> toInsert = new HashSet<>(inputMap.keySet());
+    toInsert.removeAll(existingMap.keySet());
+
+    // 3. 수정 대상: 둘 다 존재하지만 속성이 다른 경우
+    List<ProductImage> toUpdate = new ArrayList<>();
+    for (Map.Entry<UUID, ProductImageVO> entry : inputMap.entrySet()) {
+      UUID fileId = entry.getKey();
+      ProductImageVO vo = entry.getValue();
+
+      if (existingMap.containsKey(fileId)) {
+        ProductImage existing = existingMap.get(fileId);
+        if (!Objects.equals(existing.getOrderBy(), vo.getOrderBy())
+            || !Objects.equals(existing.isMain(), vo.getIsMain())) {
+          existing.setOrderBy(vo.getOrderBy());
+          existing.setMain(vo.getIsMain());
+          toUpdate.add(existing);
+        }
+      }
+    }
+
+    // 실제 처리
+    List<ProductImage> finalImages = currentImages.stream()
+        .filter(img -> !toDelete.contains(img.getFile().getId())) // 삭제 제외
+        .collect(Collectors.toCollection(ArrayList::new));
+
+    for (UUID fileId : toInsert) {
+      finalImages.add(makeImageEntity(product, inputMap.get(fileId)));
+    }
+
+    return finalImages;
 
   }
 
@@ -132,7 +181,6 @@ public class ProductService {
   @Transactional(propagation = Propagation.REQUIRED)
   public ProductVO replace(UUID id, ProductVO vo) {
     Product product = findByIdOrExcept(id);
-    // productImageService.deleteByProductId(product.getId());
 
     applyUpdate(product, vo);
 
@@ -142,7 +190,6 @@ public class ProductService {
   @Transactional(propagation = Propagation.REQUIRED)
   public ProductVO modify(UUID id, ProductVO vo) {
     Product product = findByIdOrExcept(id);
-    // productImageService.deleteByProductId(product.getId());
     applyPartialUpdate(product, vo);
 
     return ProductVO.fromEntity(productRepository.save(product));
