@@ -1,9 +1,11 @@
 package com.smartstore.api.v1.domain.product.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -32,7 +34,9 @@ public class ProductService {
 
   @PersistenceContext
   private EntityManager entityManager;
+
   private final ProductRepository productRepository;
+  private final ProductImageService productImageService;
 
   private ProductImage makeImageEntity(Product product, ProductImageVO iamgeVO) {
     return ProductImage
@@ -45,6 +49,15 @@ public class ProductService {
         .build();
   }
 
+  private List<ProductImage> applyProductImages(Product item, ProductVO vo) {
+    return Optional.ofNullable(vo.getImages())
+        .map(imageList -> imageList.stream()
+            .map(v -> makeImageEntity(item, v))
+            .collect(Collectors.toCollection(ArrayList::new)))
+        .orElseGet(ArrayList::new);
+
+  }
+
   public Product applyCreate(UUID id, ProductVO vo) {
 
     var item = Product.builder()
@@ -55,13 +68,7 @@ public class ProductService {
         .categoryId(vo.getCategoryId())
         .build();
 
-    var images = Optional.ofNullable(vo.getImages())
-        .map(imageList -> imageList.stream()
-            .map(v -> makeImageEntity(item, v))
-            .toList())
-        .orElse(List.<ProductImage>of());
-
-    item.setImages(images);
+    item.setImages(applyProductImages(item, vo));
 
     return item;
   }
@@ -71,6 +78,10 @@ public class ProductService {
     entity.setPrice(vo.getPrice());
     entity.setStock(vo.getStock());
     entity.setCategoryId(vo.getCategoryId());
+
+    var newImages = applyProductImages(entity, vo);
+    entity.getImages().clear();
+    entity.getImages().addAll(newImages);
   }
 
   public void applyPartialUpdate(Product entity, ProductVO vo) {
@@ -86,6 +97,10 @@ public class ProductService {
     if (!ObjectUtils.isEmpty(vo.getCategoryId())) {
       entity.setCategoryId(vo.getCategoryId());
     }
+
+    var newImages = applyProductImages(entity, vo);
+    entity.getImages().clear();
+    entity.getImages().addAll(newImages);
   }
 
   private Product findByIdOrExcept(UUID id) {
@@ -117,6 +132,8 @@ public class ProductService {
   @Transactional(propagation = Propagation.REQUIRED)
   public ProductVO replace(UUID id, ProductVO vo) {
     Product product = findByIdOrExcept(id);
+    // productImageService.deleteByProductId(product.getId());
+
     applyUpdate(product, vo);
 
     return ProductVO.fromEntity(productRepository.save(product));
@@ -125,6 +142,7 @@ public class ProductService {
   @Transactional(propagation = Propagation.REQUIRED)
   public ProductVO modify(UUID id, ProductVO vo) {
     Product product = findByIdOrExcept(id);
+    // productImageService.deleteByProductId(product.getId());
     applyPartialUpdate(product, vo);
 
     return ProductVO.fromEntity(productRepository.save(product));

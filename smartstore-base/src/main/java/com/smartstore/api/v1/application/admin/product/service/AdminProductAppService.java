@@ -81,7 +81,7 @@ public class AdminProductAppService {
     validateCategory(dto.getCategoryId());
 
     var id = StringUtil.stringToUUID(productId);
-    var item = productService.replace(id, dto.toVO());
+    var item = productService.replace(id, dto.toVO(id, dto.getImages()));
 
     var category = mvCategoryHierarchyService.findById(item.getCategoryId());
 
@@ -89,12 +89,13 @@ public class AdminProductAppService {
   }
 
   @Transactional
-  public AdminProductResponseDTO patch(String id,
+  public AdminProductResponseDTO patch(String productId,
       AdminProductPatchRequestDTO dto) throws BindException {
     if (!ObjectUtils.isEmpty(dto.getCategoryId())) {
       validateCategory(dto.getCategoryId());
     }
-    var item = productService.modify(UUID.fromString(id), dto.toVO());
+    var id = StringUtil.stringToUUID(productId);
+    var item = productService.modify(id, dto.toVO(id, dto.getImages()));
     var category = mvCategoryHierarchyService.findById(item.getCategoryId());
     return AdminProductResponseDTO.fromVO(item, category, cloudFrontProperties.getUrl());
   }
